@@ -1,12 +1,12 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE PartialTypeSignatures, Strict #-}</span><span>
 </span><span id="line-2"></span><span>
-</span><span id="line-3"></span><span class="hs-comment">{-|
+</span><span id="line-3"></span><span class="annot"><span class="hs-comment">{-|
 Module      : FunctionNames
 Description : Provides functions to 
 
 Contains function relating to control flow, including functions for
 resolving the targets of jumps and calls.
--}</span><span>
+-}</span></span><span>
 </span><span id="line-10"></span><span>
 </span><span id="line-11"></span><span>
 </span><span id="line-12"></span><span>
@@ -30,7 +30,7 @@ resolving the targets of jumps and calls.
 </span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Numeric</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">readHex</span></span><span class="hs-special">)</span><span>
 </span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">System.IO.Unsafe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">unsafePerformIO</span></span><span class="hs-special">)</span><span>
 </span><span id="line-32"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="X86.Register.html"><span class="hs-identifier">X86.Register</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="X86.Register.html#Register"><span class="hs-identifier">Register</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-33"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="X86.Opcode.html"><span class="hs-identifier">X86.Opcode</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="X86.Opcode.html#Opcode"><span class="hs-identifier">Opcode</span></a></span><span class="hs-special">(</span><span class="annot"><a href="X86.Opcode.html#JMP"><span class="hs-identifier">JMP</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="X86.Opcode.html#isCall"><span class="hs-identifier">isCall</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="X86.Opcode.html#isJump"><span class="hs-identifier">isJump</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="X86.Opcode.html"><span class="hs-identifier">X86.Opcode</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="X86.Opcode.html#Opcode"><span class="hs-identifier">Opcode</span></a></span><span class="hs-special">(</span><span class="annot"><a href="X86.Opcode.html#JMP"><span class="hs-identifier">JMP</span></a></span><span class="hs-special">,</span><span class="annot"><a href="X86.Opcode.html#ENDBR64"><span class="hs-identifier">ENDBR64</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="X86.Opcode.html#isCall"><span class="hs-identifier">isCall</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="X86.Opcode.html#isJump"><span class="hs-identifier">isJump</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-34"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="X86.Instruction.html"><span class="hs-identifier">X86.Instruction</span></a></span><span>
 </span><span id="line-35"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="X86.Operand.html"><span class="hs-identifier">X86.Operand</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">X86</span></span><span>
 </span><span id="line-36"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Generic.HasSize.html"><span class="hs-identifier">Generic.HasSize</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.HasSize.html#sizeof"><span class="hs-identifier">sizeof</span></a></span><span class="hs-special">)</span><span>
@@ -42,21 +42,21 @@ resolving the targets of jumps and calls.
 </span><span id="line-42"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Applicative</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-operator">(&lt;|&gt;)</span></span><span class="hs-special">)</span><span>
 </span><span id="line-43"></span><span>
 </span><span id="line-44"></span><span>
-</span><span id="line-45"></span><span class="hs-comment">-- | Returns true iff a symbol is associated with the address.</span><span>
+</span><span id="line-45"></span><span class="annot"><span class="hs-comment">-- | Returns true iff a symbol is associated with the address.</span></span><span>
 </span><span id="line-46"></span><span id="address_has_external_symbol"><span class="annot"><span class="annottext">address_has_external_symbol :: Context -&gt; a -&gt; Bool
-</span><a href="Analysis.FunctionNames.html#address_has_external_symbol"><span class="hs-identifier hs-var hs-var">address_has_external_symbol</span></a></span></span><span> </span><span id="local-6989586621679354254"><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354254"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679354253"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679354253"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-47"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Key -&gt; IntMap Symbol -&gt; Maybe Symbol
-forall a. Key -&gt; IntMap a -&gt; Maybe a
-</span><span class="hs-identifier hs-var">IM.lookup</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; Key
+</span><a href="Analysis.FunctionNames.html#address_has_external_symbol"><span class="hs-identifier hs-var hs-var">address_has_external_symbol</span></a></span></span><span> </span><span id="local-6989586621679443742"><span class="annot"><span class="annottext">Context
+</span><a href="#local-6989586621679443742"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679443743"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679443743"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Int -&gt; IntMap Symbol -&gt; Maybe Symbol
+forall a. Int -&gt; IntMap a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">IM.lookup</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; Int
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679354253"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(IntMap Symbol -&gt; Maybe Symbol) -&gt; IntMap Symbol -&gt; Maybe Symbol
+</span><a href="#local-6989586621679443743"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(IntMap Symbol -&gt; Maybe Symbol) -&gt; IntMap Symbol -&gt; Maybe Symbol
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Context -&gt; IntMap Symbol
 </span><a href="Analysis.Context.html#ctxt_symbol_table"><span class="hs-identifier hs-var">ctxt_symbol_table</span></a></span><span> </span><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354254"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><a href="#local-6989586621679443742"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="hs-keyword">of</span><span>
 </span><span id="line-48"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Binary.html#Relocated_Function"><span class="hs-identifier hs-type">Relocated_Function</span></a></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">True</span></span><span>
@@ -75,209 +75,211 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span id="line-57"></span><span class="hs-comment">--</span><span>
 </span><span id="line-58"></span><span class="hs-comment">-- @10005464e: call qword ptr [RIP + 1751660]@ read from address 1002000c0, but address has a symbol associated to it. This function call will resolve to an external function.</span><span>
 </span><span id="line-59"></span><span class="annot"><a href="Analysis.FunctionNames.html#operand_static_resolve"><span class="hs-identifier hs-type">operand_static_resolve</span></a></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-60"></span><span>  </span><span class="annot"><a href="Analysis.Context.html#Context"><span class="hs-identifier hs-type">Context</span></a></span><span>               </span><span class="hs-comment">-- ^ The context</span><span>
-</span><span id="line-61"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="X86.Instruction.html#Instruction"><span class="hs-identifier hs-type">Instruction</span></a></span><span>    </span><span class="hs-comment">-- ^ The instruction</span><span>
-</span><span id="line-62"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="X86.Operand.html#Operand"><span class="hs-identifier hs-type">X86.Operand</span></a></span><span>        </span><span class="hs-comment">-- ^ The operand of the instruction to be resolved</span><span>
+</span><span id="line-60"></span><span>  </span><span class="annot"><a href="Analysis.Context.html#Context"><span class="hs-identifier hs-type">Context</span></a></span><span>               </span><span class="annot"><span class="hs-comment">-- ^ The context</span></span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="X86.Instruction.html#Instruction"><span class="hs-identifier hs-type">Instruction</span></a></span><span>    </span><span class="annot"><span class="hs-comment">-- ^ The instruction</span></span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="X86.Operand.html#Operand"><span class="hs-identifier hs-type">X86.Operand</span></a></span><span>        </span><span class="annot"><span class="hs-comment">-- ^ The operand of the instruction to be resolved</span></span><span>
 </span><span id="line-63"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Data.JumpTarget.html#ResolvedJumpTarget"><span class="hs-identifier hs-type">ResolvedJumpTarget</span></a></span><span>
 </span><span id="line-64"></span><span id="operand_static_resolve"><span class="annot"><span class="annottext">operand_static_resolve :: Context -&gt; Instruction -&gt; Operand -&gt; ResolvedJumpTarget
-</span><a href="Analysis.FunctionNames.html#operand_static_resolve"><span class="hs-identifier hs-var hs-var">operand_static_resolve</span></a></span></span><span> </span><span id="local-6989586621679354247"><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354247"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679354246"><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354246"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Operand.html#Immediate"><span class="hs-identifier hs-type">Immediate</span></a></span><span> </span><span id="local-6989586621679354244"><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354244"><span class="hs-identifier hs-var">a'</span></a></span></span><span class="hs-special">)</span><span>                                                         </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; ResolvedJumpTarget
+</span><a href="Analysis.FunctionNames.html#operand_static_resolve"><span class="hs-identifier hs-var hs-var">operand_static_resolve</span></a></span></span><span> </span><span id="local-6989586621679443749"><span class="annot"><span class="annottext">Context
+</span><a href="#local-6989586621679443749"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679443750"><span class="annot"><span class="annottext">Instruction
+</span><a href="#local-6989586621679443750"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Operand.html#Immediate"><span class="hs-identifier hs-type">Immediate</span></a></span><span> </span><span id="local-6989586621679443752"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443752"><span class="hs-identifier hs-var">a'</span></a></span></span><span class="hs-special">)</span><span>                                                         </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; ResolvedJumpTarget
 </span><a href="Data.JumpTarget.html#ImmediateAddress"><span class="hs-identifier hs-var">ImmediateAddress</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354244"><span class="hs-identifier hs-var">a'</span></a></span><span>
-</span><span id="line-65"></span><span class="annot"><a href="Analysis.FunctionNames.html#operand_static_resolve"><span class="hs-identifier hs-var">operand_static_resolve</span></a></span><span> </span><span id="local-6989586621679354242"><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354242"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679354241"><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354241"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Operand.html#EffectiveAddress"><span class="hs-identifier hs-type">EffectiveAddress</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressPlus"><span class="hs-identifier hs-type">AddressPlus</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressStorage"><span class="hs-identifier hs-type">AddressStorage</span></a></span><span> </span><span class="annot"><span class="annottext">Register
-</span><a href="X86.Register.html#RIP"><span class="hs-identifier hs-var">RIP</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressImm"><span class="hs-identifier hs-type">AddressImm</span></a></span><span> </span><span id="local-6989586621679354235"><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354235"><span class="hs-identifier hs-var">imm</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; ResolvedJumpTarget
+</span><a href="#local-6989586621679443752"><span class="hs-identifier hs-var">a'</span></a></span><span>
+</span><span id="line-65"></span><span class="annot"><a href="Analysis.FunctionNames.html#operand_static_resolve"><span class="hs-identifier hs-var">operand_static_resolve</span></a></span><span> </span><span id="local-6989586621679443754"><span class="annot"><span class="annottext">Context
+</span><a href="#local-6989586621679443754"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679443755"><span class="annot"><span class="annottext">Instruction
+</span><a href="#local-6989586621679443755"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Operand.html#EffectiveAddress"><span class="hs-identifier hs-type">EffectiveAddress</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressPlus"><span class="hs-identifier hs-type">AddressPlus</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressStorage"><span class="hs-identifier hs-type">AddressStorage</span></a></span><span> </span><span class="annot"><span class="annottext">Register
+</span><a href="X86.Register.html#RIP"><span class="hs-identifier hs-var">RIP</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressImm"><span class="hs-identifier hs-type">AddressImm</span></a></span><span> </span><span id="local-6989586621679443761"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443761"><span class="hs-identifier hs-var">imm</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; ResolvedJumpTarget
 </span><a href="Data.JumpTarget.html#ImmediateAddress"><span class="hs-identifier hs-var">ImmediateAddress</span></a></span><span> </span><span class="annot"><span class="annottext">(Word64 -&gt; ResolvedJumpTarget) -&gt; Word64 -&gt; ResolvedJumpTarget
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Instruction -&gt; Word64
-forall storage prefix opcode annotation.
+forall {storage} {prefix} {opcode} {annotation}.
 GenericInstruction AddressWord64 storage prefix opcode annotation
 -&gt; Word64
 </span><a href="X86.Instruction.html#addressof"><span class="hs-identifier hs-var">addressof</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354241"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
+</span><a href="#local-6989586621679443755"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
 forall a. Num a =&gt; a -&gt; a -&gt; a
-</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Key -&gt; Word64
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Word64
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
-</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Instruction -&gt; Key
-forall a. HasSize a =&gt; a -&gt; Key
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Instruction -&gt; Int
+forall a. HasSize a =&gt; a -&gt; Int
 </span><a href="Generic.HasSize.html#sizeof"><span class="hs-identifier hs-var">sizeof</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354241"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
+</span><a href="#local-6989586621679443755"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354235"><span class="hs-identifier hs-var">imm</span></a></span><span>
-</span><span id="line-66"></span><span class="annot"><a href="Analysis.FunctionNames.html#operand_static_resolve"><span class="hs-identifier hs-var">operand_static_resolve</span></a></span><span> </span><span id="local-6989586621679354232"><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354232"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679354231"><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354231"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Operand.html#EffectiveAddress"><span class="hs-identifier hs-type">EffectiveAddress</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressPlus"><span class="hs-identifier hs-type">AddressPlus</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressImm"><span class="hs-identifier hs-type">AddressImm</span></a></span><span> </span><span id="local-6989586621679354230"><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354230"><span class="hs-identifier hs-var">imm</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressStorage"><span class="hs-identifier hs-type">AddressStorage</span></a></span><span> </span><span class="annot"><span class="annottext">Register
+</span><a href="#local-6989586621679443761"><span class="hs-identifier hs-var">imm</span></a></span><span>
+</span><span id="line-66"></span><span class="annot"><a href="Analysis.FunctionNames.html#operand_static_resolve"><span class="hs-identifier hs-var">operand_static_resolve</span></a></span><span> </span><span id="local-6989586621679443764"><span class="annot"><span class="annottext">Context
+</span><a href="#local-6989586621679443764"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679443765"><span class="annot"><span class="annottext">Instruction
+</span><a href="#local-6989586621679443765"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Operand.html#EffectiveAddress"><span class="hs-identifier hs-type">EffectiveAddress</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressPlus"><span class="hs-identifier hs-type">AddressPlus</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressImm"><span class="hs-identifier hs-type">AddressImm</span></a></span><span> </span><span id="local-6989586621679443766"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443766"><span class="hs-identifier hs-var">imm</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressStorage"><span class="hs-identifier hs-type">AddressStorage</span></a></span><span> </span><span class="annot"><span class="annottext">Register
 </span><a href="X86.Register.html#RIP"><span class="hs-identifier hs-var">RIP</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; ResolvedJumpTarget
 </span><a href="Data.JumpTarget.html#ImmediateAddress"><span class="hs-identifier hs-var">ImmediateAddress</span></a></span><span> </span><span class="annot"><span class="annottext">(Word64 -&gt; ResolvedJumpTarget) -&gt; Word64 -&gt; ResolvedJumpTarget
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Instruction -&gt; Word64
-forall storage prefix opcode annotation.
+forall {storage} {prefix} {opcode} {annotation}.
 GenericInstruction AddressWord64 storage prefix opcode annotation
 -&gt; Word64
 </span><a href="X86.Instruction.html#addressof"><span class="hs-identifier hs-var">addressof</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354231"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
+</span><a href="#local-6989586621679443765"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
 forall a. Num a =&gt; a -&gt; a -&gt; a
-</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Key -&gt; Word64
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Word64
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
-</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Instruction -&gt; Key
-forall a. HasSize a =&gt; a -&gt; Key
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Instruction -&gt; Int
+forall a. HasSize a =&gt; a -&gt; Int
 </span><a href="Generic.HasSize.html#sizeof"><span class="hs-identifier hs-var">sizeof</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354231"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
+</span><a href="#local-6989586621679443765"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354230"><span class="hs-identifier hs-var">imm</span></a></span><span>
-</span><span id="line-67"></span><span class="annot"><a href="Analysis.FunctionNames.html#operand_static_resolve"><span class="hs-identifier hs-var">operand_static_resolve</span></a></span><span> </span><span id="local-6989586621679354229"><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354229"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679354228"><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354228"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Operand.html#Memory"><span class="hs-identifier hs-type">Memory</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressPlus"><span class="hs-identifier hs-type">AddressPlus</span></a></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressStorage"><span class="hs-identifier hs-type">AddressStorage</span></a></span><span> </span><span class="annot"><span class="annottext">Register
-</span><a href="X86.Register.html#RIP"><span class="hs-identifier hs-var">RIP</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressImm"><span class="hs-identifier hs-type">AddressImm</span></a></span><span> </span><span id="local-6989586621679354226"><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354226"><span class="hs-identifier hs-var">imm</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span id="local-6989586621679354225"><span class="annot"><span class="annottext">Key
-</span><a href="#local-6989586621679354225"><span class="hs-identifier hs-var">si</span></a></span></span><span class="hs-special">)</span><span>       </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Context
--&gt; Instruction -&gt; (Word64 -&gt; Word64) -&gt; Key -&gt; ResolvedJumpTarget
+</span><a href="#local-6989586621679443766"><span class="hs-identifier hs-var">imm</span></a></span><span>
+</span><span id="line-67"></span><span class="annot"><a href="Analysis.FunctionNames.html#operand_static_resolve"><span class="hs-identifier hs-var">operand_static_resolve</span></a></span><span> </span><span id="local-6989586621679443767"><span class="annot"><span class="annottext">Context
+</span><a href="#local-6989586621679443767"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679443768"><span class="annot"><span class="annottext">Instruction
+</span><a href="#local-6989586621679443768"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Operand.html#Memory"><span class="hs-identifier hs-type">Memory</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressPlus"><span class="hs-identifier hs-type">AddressPlus</span></a></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressStorage"><span class="hs-identifier hs-type">AddressStorage</span></a></span><span> </span><span class="annot"><span class="annottext">Register
+</span><a href="X86.Register.html#RIP"><span class="hs-identifier hs-var">RIP</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressImm"><span class="hs-identifier hs-type">AddressImm</span></a></span><span> </span><span id="local-6989586621679443770"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443770"><span class="hs-identifier hs-var">imm</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span id="local-6989586621679443771"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679443771"><span class="hs-identifier hs-var">si</span></a></span></span><span class="hs-special">)</span><span>       </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Context
+-&gt; Instruction -&gt; (Word64 -&gt; Word64) -&gt; Int -&gt; ResolvedJumpTarget
 </span><a href="Analysis.FunctionNames.html#static_resolve_rip_expr"><span class="hs-identifier hs-var">static_resolve_rip_expr</span></a></span><span> </span><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354229"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354228"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679354223"><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354223"><span class="hs-identifier hs-var">rip</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354223"><span class="hs-identifier hs-var">rip</span></a></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
+</span><a href="#local-6989586621679443767"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
+</span><a href="#local-6989586621679443768"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679443773"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443773"><span class="hs-identifier hs-var">rip</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443773"><span class="hs-identifier hs-var">rip</span></a></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354226"><span class="hs-identifier hs-var">imm</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Key
-</span><a href="#local-6989586621679354225"><span class="hs-identifier hs-var">si</span></a></span><span>
-</span><span id="line-68"></span><span class="annot"><a href="Analysis.FunctionNames.html#operand_static_resolve"><span class="hs-identifier hs-var">operand_static_resolve</span></a></span><span> </span><span id="local-6989586621679354222"><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354222"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679354221"><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354221"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Operand.html#Memory"><span class="hs-identifier hs-type">Memory</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressPlus"><span class="hs-identifier hs-type">AddressPlus</span></a></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressImm"><span class="hs-identifier hs-type">AddressImm</span></a></span><span> </span><span id="local-6989586621679354220"><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354220"><span class="hs-identifier hs-var">imm</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressStorage"><span class="hs-identifier hs-type">AddressStorage</span></a></span><span> </span><span class="annot"><span class="annottext">Register
-</span><a href="X86.Register.html#RIP"><span class="hs-identifier hs-var">RIP</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span id="local-6989586621679354219"><span class="annot"><span class="annottext">Key
-</span><a href="#local-6989586621679354219"><span class="hs-identifier hs-var">si</span></a></span></span><span class="hs-special">)</span><span>       </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Context
--&gt; Instruction -&gt; (Word64 -&gt; Word64) -&gt; Key -&gt; ResolvedJumpTarget
+</span><a href="#local-6989586621679443770"><span class="hs-identifier hs-var">imm</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679443771"><span class="hs-identifier hs-var">si</span></a></span><span>
+</span><span id="line-68"></span><span class="annot"><a href="Analysis.FunctionNames.html#operand_static_resolve"><span class="hs-identifier hs-var">operand_static_resolve</span></a></span><span> </span><span id="local-6989586621679443774"><span class="annot"><span class="annottext">Context
+</span><a href="#local-6989586621679443774"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679443775"><span class="annot"><span class="annottext">Instruction
+</span><a href="#local-6989586621679443775"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Operand.html#Memory"><span class="hs-identifier hs-type">Memory</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressPlus"><span class="hs-identifier hs-type">AddressPlus</span></a></span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressImm"><span class="hs-identifier hs-type">AddressImm</span></a></span><span> </span><span id="local-6989586621679443776"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443776"><span class="hs-identifier hs-var">imm</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressStorage"><span class="hs-identifier hs-type">AddressStorage</span></a></span><span> </span><span class="annot"><span class="annottext">Register
+</span><a href="X86.Register.html#RIP"><span class="hs-identifier hs-var">RIP</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span id="local-6989586621679443777"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679443777"><span class="hs-identifier hs-var">si</span></a></span></span><span class="hs-special">)</span><span>       </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Context
+-&gt; Instruction -&gt; (Word64 -&gt; Word64) -&gt; Int -&gt; ResolvedJumpTarget
 </span><a href="Analysis.FunctionNames.html#static_resolve_rip_expr"><span class="hs-identifier hs-var">static_resolve_rip_expr</span></a></span><span> </span><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354222"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354221"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679354218"><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354218"><span class="hs-identifier hs-var">rip</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354218"><span class="hs-identifier hs-var">rip</span></a></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
+</span><a href="#local-6989586621679443774"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
+</span><a href="#local-6989586621679443775"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679443778"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443778"><span class="hs-identifier hs-var">rip</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443778"><span class="hs-identifier hs-var">rip</span></a></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354220"><span class="hs-identifier hs-var">imm</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Key
-</span><a href="#local-6989586621679354219"><span class="hs-identifier hs-var">si</span></a></span><span>
-</span><span id="line-69"></span><span class="annot"><a href="Analysis.FunctionNames.html#operand_static_resolve"><span class="hs-identifier hs-var">operand_static_resolve</span></a></span><span> </span><span id="local-6989586621679354217"><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354217"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679354216"><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354216"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Operand.html#Memory"><span class="hs-identifier hs-type">Memory</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressMinus"><span class="hs-identifier hs-type">AddressMinus</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressStorage"><span class="hs-identifier hs-type">AddressStorage</span></a></span><span> </span><span class="annot"><span class="annottext">Register
-</span><a href="X86.Register.html#RIP"><span class="hs-identifier hs-var">RIP</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressImm"><span class="hs-identifier hs-type">AddressImm</span></a></span><span> </span><span id="local-6989586621679354214"><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354214"><span class="hs-identifier hs-var">imm</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span id="local-6989586621679354213"><span class="annot"><span class="annottext">Key
-</span><a href="#local-6989586621679354213"><span class="hs-identifier hs-var">si</span></a></span></span><span class="hs-special">)</span><span>       </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Context
--&gt; Instruction -&gt; (Word64 -&gt; Word64) -&gt; Key -&gt; ResolvedJumpTarget
+</span><a href="#local-6989586621679443776"><span class="hs-identifier hs-var">imm</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679443777"><span class="hs-identifier hs-var">si</span></a></span><span>
+</span><span id="line-69"></span><span class="annot"><a href="Analysis.FunctionNames.html#operand_static_resolve"><span class="hs-identifier hs-var">operand_static_resolve</span></a></span><span> </span><span id="local-6989586621679443779"><span class="annot"><span class="annottext">Context
+</span><a href="#local-6989586621679443779"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679443780"><span class="annot"><span class="annottext">Instruction
+</span><a href="#local-6989586621679443780"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Operand.html#Memory"><span class="hs-identifier hs-type">Memory</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressMinus"><span class="hs-identifier hs-type">AddressMinus</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressStorage"><span class="hs-identifier hs-type">AddressStorage</span></a></span><span> </span><span class="annot"><span class="annottext">Register
+</span><a href="X86.Register.html#RIP"><span class="hs-identifier hs-var">RIP</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Address.html#AddressImm"><span class="hs-identifier hs-type">AddressImm</span></a></span><span> </span><span id="local-6989586621679443782"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443782"><span class="hs-identifier hs-var">imm</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span id="local-6989586621679443783"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679443783"><span class="hs-identifier hs-var">si</span></a></span></span><span class="hs-special">)</span><span>       </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Context
+-&gt; Instruction -&gt; (Word64 -&gt; Word64) -&gt; Int -&gt; ResolvedJumpTarget
 </span><a href="Analysis.FunctionNames.html#static_resolve_rip_expr"><span class="hs-identifier hs-var">static_resolve_rip_expr</span></a></span><span> </span><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354217"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354216"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679354212"><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354212"><span class="hs-identifier hs-var">rip</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354212"><span class="hs-identifier hs-var">rip</span></a></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
+</span><a href="#local-6989586621679443779"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
+</span><a href="#local-6989586621679443780"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679443784"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443784"><span class="hs-identifier hs-var">rip</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443784"><span class="hs-identifier hs-var">rip</span></a></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354214"><span class="hs-identifier hs-var">imm</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Key
-</span><a href="#local-6989586621679354213"><span class="hs-identifier hs-var">si</span></a></span><span>
-</span><span id="line-70"></span><span class="annot"><a href="Analysis.FunctionNames.html#operand_static_resolve"><span class="hs-identifier hs-var">operand_static_resolve</span></a></span><span> </span><span id="local-6989586621679354211"><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354211"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679354210"><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354210"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="annot"><span class="annottext">Operand
+</span><a href="#local-6989586621679443782"><span class="hs-identifier hs-var">imm</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679443783"><span class="hs-identifier hs-var">si</span></a></span><span>
+</span><span id="line-70"></span><span class="annot"><a href="Analysis.FunctionNames.html#operand_static_resolve"><span class="hs-identifier hs-var">operand_static_resolve</span></a></span><span> </span><span id="local-6989586621679443785"><span class="annot"><span class="annottext">Context
+</span><a href="#local-6989586621679443785"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679443786"><span class="annot"><span class="annottext">Instruction
+</span><a href="#local-6989586621679443786"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="annot"><span class="annottext">Operand
 </span><span class="hs-identifier">_</span></span><span>                                                                      </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ResolvedJumpTarget
 </span><a href="Data.JumpTarget.html#Unresolved"><span class="hs-identifier hs-var">Unresolved</span></a></span><span>
 </span><span id="line-71"></span><span>
 </span><span id="line-72"></span><span class="annot"><a href="Analysis.FunctionNames.html#static_resolve_rip_expr"><span class="hs-identifier hs-type">static_resolve_rip_expr</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Analysis.Context.html#Context"><span class="hs-identifier hs-type">Context</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="X86.Instruction.html#Instruction"><span class="hs-identifier hs-type">Instruction</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Word64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word64</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Data.JumpTarget.html#ResolvedJumpTarget"><span class="hs-identifier hs-type">ResolvedJumpTarget</span></a></span><span>
 </span><span id="line-73"></span><span id="static_resolve_rip_expr"><span class="annot"><span class="annottext">static_resolve_rip_expr :: Context
--&gt; Instruction -&gt; (Word64 -&gt; Word64) -&gt; Key -&gt; ResolvedJumpTarget
-</span><a href="Analysis.FunctionNames.html#static_resolve_rip_expr"><span class="hs-identifier hs-var hs-var">static_resolve_rip_expr</span></a></span></span><span> </span><span id="local-6989586621679354208"><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354208"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679354207"><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354207"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621679354206"><span class="annot"><span class="annottext">Word64 -&gt; Word64
-</span><a href="#local-6989586621679354206"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679354205"><span class="annot"><span class="annottext">Key
-</span><a href="#local-6989586621679354205"><span class="hs-identifier hs-var">si</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-74"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679354204"><span class="annot"><span class="annottext">rip :: Word64
-</span><a href="#local-6989586621679354204"><span class="hs-identifier hs-var hs-var">rip</span></a></span></span><span>     </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Instruction -&gt; Word64
-forall storage prefix opcode annotation.
+-&gt; Instruction -&gt; (Word64 -&gt; Word64) -&gt; Int -&gt; ResolvedJumpTarget
+</span><a href="Analysis.FunctionNames.html#static_resolve_rip_expr"><span class="hs-identifier hs-var hs-var">static_resolve_rip_expr</span></a></span></span><span> </span><span id="local-6989586621679443788"><span class="annot"><span class="annottext">Context
+</span><a href="#local-6989586621679443788"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679443789"><span class="annot"><span class="annottext">Instruction
+</span><a href="#local-6989586621679443789"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621679443790"><span class="annot"><span class="annottext">Word64 -&gt; Word64
+</span><a href="#local-6989586621679443790"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679443791"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679443791"><span class="hs-identifier hs-var">si</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-74"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679443796"><span class="annot"><span class="annottext">rip :: Word64
+</span><a href="#local-6989586621679443796"><span class="hs-identifier hs-var hs-var">rip</span></a></span></span><span>     </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Instruction -&gt; Word64
+forall {storage} {prefix} {opcode} {annotation}.
 GenericInstruction AddressWord64 storage prefix opcode annotation
 -&gt; Word64
 </span><a href="X86.Instruction.html#addressof"><span class="hs-identifier hs-var">addressof</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354207"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
+</span><a href="#local-6989586621679443789"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
 forall a. Num a =&gt; a -&gt; a -&gt; a
-</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Key -&gt; Word64
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Word64
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
-</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(Key -&gt; Word64) -&gt; Key -&gt; Word64
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Word64) -&gt; Int -&gt; Word64
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Instruction -&gt; Key
-forall a. HasSize a =&gt; a -&gt; Key
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Instruction -&gt; Int
+forall a. HasSize a =&gt; a -&gt; Int
 </span><a href="Generic.HasSize.html#sizeof"><span class="hs-identifier hs-var">sizeof</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354207"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-75"></span><span>      </span><span id="local-6989586621679354203"><span class="annot"><span class="annottext">a' :: Word64
-</span><a href="#local-6989586621679354203"><span class="hs-identifier hs-var hs-var">a'</span></a></span></span><span>      </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64
-</span><a href="#local-6989586621679354206"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354204"><span class="hs-identifier hs-var">rip</span></a></span><span> </span><span class="hs-keyword">in</span><span>
+</span><a href="#local-6989586621679443789"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-75"></span><span>      </span><span id="local-6989586621679443797"><span class="annot"><span class="annottext">a' :: Word64
+</span><a href="#local-6989586621679443797"><span class="hs-identifier hs-var hs-var">a'</span></a></span></span><span>      </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64
+</span><a href="#local-6989586621679443790"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443796"><span class="hs-identifier hs-var">rip</span></a></span><span> </span><span class="hs-keyword">in</span><span>
 </span><span id="line-76"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word64 -&gt; Maybe ResolvedJumpTarget
-forall a. Integral a =&gt; a -&gt; Maybe ResolvedJumpTarget
-</span><a href="#local-6989586621679354202"><span class="hs-identifier hs-var">try_relocated_function</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354203"><span class="hs-identifier hs-var">a'</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe ResolvedJumpTarget
+forall {a}. Integral a =&gt; a -&gt; Maybe ResolvedJumpTarget
+</span><a href="#local-6989586621679443798"><span class="hs-identifier hs-var">try_relocated_function</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443797"><span class="hs-identifier hs-var">a'</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe ResolvedJumpTarget
 -&gt; Maybe ResolvedJumpTarget -&gt; Maybe ResolvedJumpTarget
+forall a. Maybe a -&gt; Maybe a -&gt; Maybe a
 forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
 </span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Maybe ResolvedJumpTarget
-</span><a href="#local-6989586621679354201"><span class="hs-identifier hs-var">try_relocation</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354203"><span class="hs-identifier hs-var">a'</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Maybe ResolvedJumpTarget
+</span><a href="#local-6989586621679443799"><span class="hs-identifier hs-var">try_relocation</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443797"><span class="hs-identifier hs-var">a'</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Maybe ResolvedJumpTarget
 -&gt; ResolvedJumpTarget -&gt; ResolvedJumpTarget
 forall a. Eq a =&gt; Maybe a -&gt; a -&gt; a
 </span><a href="Base.html#orElse"><span class="hs-operator hs-var">`orElse`</span></a></span><span> </span><span class="annot"><span class="annottext">ResolvedJumpTarget
 </span><a href="Data.JumpTarget.html#Unresolved"><span class="hs-identifier hs-var">Unresolved</span></a></span><span>
 </span><span id="line-77"></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-78"></span><span>  </span><span id="local-6989586621679354202"><span class="annot"><span class="annottext">try_relocated_function :: a -&gt; Maybe ResolvedJumpTarget
-</span><a href="#local-6989586621679354202"><span class="hs-identifier hs-var hs-var">try_relocated_function</span></a></span></span><span> </span><span id="local-6989586621679354199"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679354199"><span class="hs-identifier hs-var">a'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-79"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Key -&gt; IntMap Symbol -&gt; Maybe Symbol
-forall a. Key -&gt; IntMap a -&gt; Maybe a
-</span><span class="hs-identifier hs-var">IM.lookup</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; Key
+</span><span id="line-78"></span><span>  </span><span id="local-6989586621679443798"><span class="annot"><span class="annottext">try_relocated_function :: a -&gt; Maybe ResolvedJumpTarget
+</span><a href="#local-6989586621679443798"><span class="hs-identifier hs-var hs-var">try_relocated_function</span></a></span></span><span> </span><span id="local-6989586621679443814"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679443814"><span class="hs-identifier hs-var">a'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-79"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Int -&gt; IntMap Symbol -&gt; Maybe Symbol
+forall a. Int -&gt; IntMap a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">IM.lookup</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; Int
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679354199"><span class="hs-identifier hs-var">a'</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(IntMap Symbol -&gt; Maybe Symbol) -&gt; IntMap Symbol -&gt; Maybe Symbol
+</span><a href="#local-6989586621679443814"><span class="hs-identifier hs-var">a'</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(IntMap Symbol -&gt; Maybe Symbol) -&gt; IntMap Symbol -&gt; Maybe Symbol
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Context -&gt; IntMap Symbol
 </span><a href="Analysis.Context.html#ctxt_symbol_table"><span class="hs-identifier hs-var">ctxt_symbol_table</span></a></span><span> </span><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354208"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><a href="#local-6989586621679443788"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="hs-keyword">of</span><span>
 </span><span id="line-80"></span><span>      </span><span class="hs-comment">-- Example:</span><span>
 </span><span id="line-81"></span><span>      </span><span class="hs-comment">--   Instruction 10005464e: CALL 64 ptr [RIP + 1751660] 6 read from address 1002000c0 which has symbol _objc_msgSend producing address 0</span><span>
 </span><span id="line-82"></span><span>      </span><span class="hs-comment">--   Address *[1002000c0,8] is treated as an external function call       </span><span>
-</span><span id="line-83"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Binary.html#Relocated_Function"><span class="hs-identifier hs-type">Relocated_Function</span></a></span><span> </span><span id="local-6989586621679354198"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679354198"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ResolvedJumpTarget -&gt; Maybe ResolvedJumpTarget
+</span><span id="line-83"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Binary.html#Relocated_Function"><span class="hs-identifier hs-type">Relocated_Function</span></a></span><span> </span><span id="local-6989586621679443815"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679443815"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ResolvedJumpTarget -&gt; Maybe ResolvedJumpTarget
 forall a. a -&gt; Maybe a
 </span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">(ResolvedJumpTarget -&gt; Maybe ResolvedJumpTarget)
 -&gt; ResolvedJumpTarget -&gt; Maybe ResolvedJumpTarget
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; ResolvedJumpTarget
 </span><a href="Data.JumpTarget.html#External"><span class="hs-identifier hs-var">External</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679354198"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><a href="#local-6989586621679443815"><span class="hs-identifier hs-var">s</span></a></span><span>
 </span><span id="line-84"></span><span>      </span><span class="annot"><span class="annottext">Maybe Symbol
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe ResolvedJumpTarget
 forall a. Maybe a
 </span><span class="hs-identifier hs-var">Nothing</span></span><span>
 </span><span id="line-85"></span><span>
-</span><span id="line-86"></span><span>  </span><span id="local-6989586621679354201"><span class="annot"><span class="annottext">try_relocation :: Word64 -&gt; Maybe ResolvedJumpTarget
-</span><a href="#local-6989586621679354201"><span class="hs-identifier hs-var hs-var">try_relocation</span></a></span></span><span> </span><span id="local-6989586621679354196"><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354196"><span class="hs-identifier hs-var">a'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-86"></span><span>  </span><span id="local-6989586621679443799"><span class="annot"><span class="annottext">try_relocation :: Word64 -&gt; Maybe ResolvedJumpTarget
+</span><a href="#local-6989586621679443799"><span class="hs-identifier hs-var hs-var">try_relocation</span></a></span></span><span> </span><span id="local-6989586621679443821"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443821"><span class="hs-identifier hs-var">a'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-87"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">(Relocation -&gt; Bool) -&gt; Set Relocation -&gt; Maybe Relocation
 forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; Bool) -&gt; t a -&gt; Maybe a
 </span><span class="hs-identifier hs-var">find</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word64 -&gt; Relocation -&gt; Bool
-</span><a href="#local-6989586621679354194"><span class="hs-identifier hs-var">is_reloc_for</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354196"><span class="hs-identifier hs-var">a'</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Set Relocation -&gt; Maybe Relocation)
+</span><a href="#local-6989586621679443823"><span class="hs-identifier hs-var">is_reloc_for</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443821"><span class="hs-identifier hs-var">a'</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Set Relocation -&gt; Maybe Relocation)
 -&gt; Set Relocation -&gt; Maybe Relocation
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Context -&gt; Set Relocation
 </span><a href="Analysis.Context.html#ctxt_relocs"><span class="hs-identifier hs-var">ctxt_relocs</span></a></span><span> </span><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354208"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><a href="#local-6989586621679443788"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="hs-keyword">of</span><span>
 </span><span id="line-88"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Binary.html#Relocation"><span class="hs-identifier hs-type">Relocation</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
-</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679354191"><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354191"><span class="hs-identifier hs-var">a1</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Maybe ResolvedJumpTarget
-forall a. Integral a =&gt; a -&gt; Maybe ResolvedJumpTarget
-</span><a href="#local-6989586621679354202"><span class="hs-identifier hs-var">try_relocated_function</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354191"><span class="hs-identifier hs-var">a1</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe ResolvedJumpTarget
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679443826"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443826"><span class="hs-identifier hs-var">a1</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Maybe ResolvedJumpTarget
+forall {a}. Integral a =&gt; a -&gt; Maybe ResolvedJumpTarget
+</span><a href="#local-6989586621679443798"><span class="hs-identifier hs-var">try_relocated_function</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443826"><span class="hs-identifier hs-var">a1</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe ResolvedJumpTarget
 -&gt; Maybe ResolvedJumpTarget -&gt; Maybe ResolvedJumpTarget
+forall a. Maybe a -&gt; Maybe a -&gt; Maybe a
 forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
 </span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ResolvedJumpTarget -&gt; Maybe ResolvedJumpTarget
 forall a. a -&gt; Maybe a
@@ -286,20 +288,20 @@ forall a. a -&gt; Maybe a
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; ResolvedJumpTarget
 </span><a href="Data.JumpTarget.html#ImmediateAddress"><span class="hs-identifier hs-var">ImmediateAddress</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354191"><span class="hs-identifier hs-var">a1</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679443826"><span class="hs-identifier hs-var">a1</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-89"></span><span>      </span><span class="annot"><span class="annottext">Maybe Relocation
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe ResolvedJumpTarget
 forall a. Maybe a
 </span><span class="hs-identifier hs-var">Nothing</span></span><span>
-</span><span id="line-90"></span><span>  </span><span id="local-6989586621679354194"><span class="annot"><span class="annottext">is_reloc_for :: Word64 -&gt; Relocation -&gt; Bool
-</span><a href="#local-6989586621679354194"><span class="hs-identifier hs-var hs-var">is_reloc_for</span></a></span></span><span> </span><span id="local-6989586621679354190"><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354190"><span class="hs-identifier hs-var">a'</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Binary.html#Relocation"><span class="hs-identifier hs-type">Relocation</span></a></span><span> </span><span id="local-6989586621679354189"><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354189"><span class="hs-identifier hs-var">a0</span></a></span></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><span id="line-90"></span><span>  </span><span id="local-6989586621679443823"><span class="annot"><span class="annottext">is_reloc_for :: Word64 -&gt; Relocation -&gt; Bool
+</span><a href="#local-6989586621679443823"><span class="hs-identifier hs-var hs-var">is_reloc_for</span></a></span></span><span> </span><span id="local-6989586621679443829"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443829"><span class="hs-identifier hs-var">a'</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Binary.html#Relocation"><span class="hs-identifier hs-type">Relocation</span></a></span><span> </span><span id="local-6989586621679443830"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443830"><span class="hs-identifier hs-var">a0</span></a></span></span><span> </span><span class="annot"><span class="annottext">Word64
 </span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354190"><span class="hs-identifier hs-var">a'</span></a></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Bool
+</span><a href="#local-6989586621679443829"><span class="hs-identifier hs-var">a'</span></a></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354189"><span class="hs-identifier hs-var">a0</span></a></span><span>
+</span><a href="#local-6989586621679443830"><span class="hs-identifier hs-var">a0</span></a></span><span>
 </span><span id="line-91"></span><span>
 </span><span id="line-92"></span><span class="hs-comment">{--
       (Nothing, Just a'') -&gt;
@@ -318,24 +320,24 @@ forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span id="line-106"></span><span class="hs-comment">-- 	if the first instruction at the entry address immediately jumps to an external function,</span><span>
 </span><span id="line-107"></span><span class="hs-comment">-- 	return the name of that external function instead. This happens in a @.got@ section.</span><span>
 </span><span id="line-108"></span><span class="annot"><a href="Analysis.FunctionNames.html#function_name_of_entry"><span class="hs-identifier hs-type">function_name_of_entry</span></a></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-109"></span><span>  </span><span class="annot"><a href="Analysis.Context.html#Context"><span class="hs-identifier hs-type">Context</span></a></span><span>  </span><span class="hs-comment">-- ^ The context</span><span>
-</span><span id="line-110"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>   </span><span class="hs-comment">-- ^ The entry address</span><span>
+</span><span id="line-109"></span><span>  </span><span class="annot"><a href="Analysis.Context.html#Context"><span class="hs-identifier hs-type">Context</span></a></span><span>  </span><span class="annot"><span class="hs-comment">-- ^ The context</span></span><span>
+</span><span id="line-110"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>   </span><span class="annot"><span class="hs-comment">-- ^ The entry address</span></span><span>
 </span><span id="line-111"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
-</span><span id="line-112"></span><span id="function_name_of_entry"><span class="annot"><span class="annottext">function_name_of_entry :: Context -&gt; Key -&gt; String
-</span><a href="Analysis.FunctionNames.html#function_name_of_entry"><span class="hs-identifier hs-var hs-var">function_name_of_entry</span></a></span></span><span> </span><span id="local-6989586621679354187"><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354187"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679354186"><span class="annot"><span class="annottext">Key
-</span><a href="#local-6989586621679354186"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-113"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Key -&gt; IntMap Symbol -&gt; Maybe Symbol
-forall a. Key -&gt; IntMap a -&gt; Maybe a
-</span><span class="hs-identifier hs-var">IM.lookup</span></span><span> </span><span class="annot"><span class="annottext">Key
-</span><a href="#local-6989586621679354186"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">(IntMap Symbol -&gt; Maybe Symbol) -&gt; IntMap Symbol -&gt; Maybe Symbol
+</span><span id="line-112"></span><span id="function_name_of_entry"><span class="annot"><span class="annottext">function_name_of_entry :: Context -&gt; Int -&gt; String
+</span><a href="Analysis.FunctionNames.html#function_name_of_entry"><span class="hs-identifier hs-var hs-var">function_name_of_entry</span></a></span></span><span> </span><span id="local-6989586621679443832"><span class="annot"><span class="annottext">Context
+</span><a href="#local-6989586621679443832"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679443833"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679443833"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-113"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Int -&gt; IntMap Symbol -&gt; Maybe Symbol
+forall a. Int -&gt; IntMap a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">IM.lookup</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679443833"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">(IntMap Symbol -&gt; Maybe Symbol) -&gt; IntMap Symbol -&gt; Maybe Symbol
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Context -&gt; IntMap Symbol
 </span><a href="Analysis.Context.html#ctxt_symbol_table"><span class="hs-identifier hs-var">ctxt_symbol_table</span></a></span><span> </span><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354187"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-114"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Binary.html#Relocated_Function"><span class="hs-identifier hs-type">Relocated_Function</span></a></span><span> </span><span id="local-6989586621679354185"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679354185"><span class="hs-identifier hs-var">sym</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679354185"><span class="hs-identifier hs-var">sym</span></a></span><span>
+</span><a href="#local-6989586621679443832"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-114"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Generic.Binary.html#Relocated_Function"><span class="hs-identifier hs-type">Relocated_Function</span></a></span><span> </span><span id="local-6989586621679443834"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679443834"><span class="hs-identifier hs-var">sym</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679443834"><span class="hs-identifier hs-var">sym</span></a></span><span>
 </span><span id="line-115"></span><span>    </span><span class="annot"><span class="annottext">Maybe Symbol
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-116"></span><span>      </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">IO (Maybe Instruction) -&gt; Maybe Instruction
@@ -345,108 +347,166 @@ forall a. IO a -&gt; a
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Context -&gt; Word64 -&gt; IO (Maybe Instruction)
 </span><a href="Analysis.Context.html#fetch_instruction"><span class="hs-identifier hs-var">fetch_instruction</span></a></span><span> </span><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354187"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Key -&gt; Word64
+</span><a href="#local-6989586621679443832"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Word64
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
-</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Key
-</span><a href="#local-6989586621679354186"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span> </span><span class="hs-comment">-- TODO. However, should be safe as result is immutable.</span><span>
-</span><span id="line-117"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679354183"><span class="annot"><span class="annottext">i :: Instruction
-</span><a href="#local-6989586621679354183"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Generic.Instruction.html#Instruction"><span class="hs-identifier hs-type">Instruction</span></a></span><span> </span><span class="annot"><span class="annottext">AddressWord64
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679443833"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span> </span><span class="hs-comment">-- TODO. However, should be safe as result is immutable.</span><span>
+</span><span id="line-117"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679443836"><span class="annot"><span class="annottext">i :: Instruction
+</span><a href="#local-6989586621679443836"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Generic.Instruction.html#Instruction"><span class="hs-identifier hs-type">Instruction</span></a></span><span> </span><span class="annot"><span class="annottext">AddressWord64
 </span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Maybe Prefix
 </span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Opcode
 </span><a href="X86.Opcode.html#JMP"><span class="hs-identifier hs-var">JMP</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Operand
-</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-special">[</span><span id="local-6989586621679354182"><span class="annot"><span class="annottext">Operand
-</span><a href="#local-6989586621679354182"><span class="hs-identifier hs-var">op1</span></a></span></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">Maybe Key
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-special">[</span><span id="local-6989586621679443837"><span class="annot"><span class="annottext">Operand
+</span><a href="#local-6989586621679443837"><span class="hs-identifier hs-var">op1</span></a></span></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">Maybe Int
 </span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span>  </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-118"></span><span>          </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Context -&gt; Instruction -&gt; Operand -&gt; ResolvedJumpTarget
 </span><a href="Analysis.FunctionNames.html#operand_static_resolve"><span class="hs-identifier hs-var">operand_static_resolve</span></a></span><span> </span><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354187"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354183"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Operand
-</span><a href="#local-6989586621679354182"><span class="hs-identifier hs-var">op1</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-119"></span><span>            </span><span class="annot"><a href="Data.JumpTarget.html#External"><span class="hs-identifier hs-type">External</span></a></span><span> </span><span id="local-6989586621679354181"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679354181"><span class="hs-identifier hs-var">sym</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679354181"><span class="hs-identifier hs-var">sym</span></a></span><span>
+</span><a href="#local-6989586621679443832"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
+</span><a href="#local-6989586621679443836"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Operand
+</span><a href="#local-6989586621679443837"><span class="hs-identifier hs-var">op1</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-119"></span><span>            </span><span class="annot"><a href="Data.JumpTarget.html#External"><span class="hs-identifier hs-type">External</span></a></span><span> </span><span id="local-6989586621679443838"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679443838"><span class="hs-identifier hs-var">sym</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; String
+</span><a href="X86.Conventions.html#strip_GLIBC"><span class="hs-identifier hs-var">strip_GLIBC</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679443838"><span class="hs-identifier hs-var">sym</span></a></span><span>
 </span><span id="line-120"></span><span>            </span><span class="annot"><span class="annottext">ResolvedJumpTarget
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;0x&quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
 forall a. [a] -&gt; [a] -&gt; [a]
-</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Key -&gt; String
-forall a. (Integral a, Show a) =&gt; a -&gt; String
-</span><a href="Base.html#showHex"><span class="hs-identifier hs-var">showHex</span></a></span><span> </span><span class="annot"><span class="annottext">Key
-</span><a href="#local-6989586621679354186"><span class="hs-identifier hs-var">a</span></a></span><span>
-</span><span id="line-121"></span><span>        </span><span class="annot"><span class="annottext">Maybe Instruction
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; String
+forall {a}. Integral a =&gt; a -&gt; String
+</span><a href="Base.html#showHex"><span class="hs-identifier hs-var">showHex</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679443833"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-121"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679443841"><span class="annot"><span class="annottext">i :: Instruction
+</span><a href="#local-6989586621679443841"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Generic.Instruction.html#Instruction"><span class="hs-identifier hs-type">Instruction</span></a></span><span> </span><span class="annot"><span class="annottext">AddressWord64
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Maybe Prefix
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Opcode
+</span><a href="X86.Opcode.html#ENDBR64"><span class="hs-identifier hs-var">ENDBR64</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Operand
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="annot"><span class="annottext">[Operand]
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679443842"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679443842"><span class="hs-identifier hs-var">si</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>  </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-122"></span><span>          </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">IO (Maybe Instruction) -&gt; Maybe Instruction
+forall a. IO a -&gt; a
+</span><span class="hs-identifier hs-var">unsafePerformIO</span></span><span> </span><span class="annot"><span class="annottext">(IO (Maybe Instruction) -&gt; Maybe Instruction)
+-&gt; IO (Maybe Instruction) -&gt; Maybe Instruction
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Context -&gt; Word64 -&gt; IO (Maybe Instruction)
+</span><a href="Analysis.Context.html#fetch_instruction"><span class="hs-identifier hs-var">fetch_instruction</span></a></span><span> </span><span class="annot"><span class="annottext">Context
+</span><a href="#local-6989586621679443832"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Word64
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679443833"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Word64
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679443842"><span class="hs-identifier hs-var">si</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span> </span><span class="hs-comment">-- TODO. However, should be safe as result is immutable.</span><span>
+</span><span id="line-123"></span><span>            </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679443843"><span class="annot"><span class="annottext">i :: Instruction
+</span><a href="#local-6989586621679443843"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Generic.Instruction.html#Instruction"><span class="hs-identifier hs-type">Instruction</span></a></span><span> </span><span class="annot"><span class="annottext">AddressWord64
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Maybe Prefix
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Opcode
+</span><a href="X86.Opcode.html#JMP"><span class="hs-identifier hs-var">JMP</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Operand
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-special">[</span><span id="local-6989586621679443844"><span class="annot"><span class="annottext">Operand
+</span><a href="#local-6989586621679443844"><span class="hs-identifier hs-var">op1</span></a></span></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">Maybe Int
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span>  </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-124"></span><span>              </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Context -&gt; Instruction -&gt; Operand -&gt; ResolvedJumpTarget
+</span><a href="Analysis.FunctionNames.html#operand_static_resolve"><span class="hs-identifier hs-var">operand_static_resolve</span></a></span><span> </span><span class="annot"><span class="annottext">Context
+</span><a href="#local-6989586621679443832"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
+</span><a href="#local-6989586621679443843"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Operand
+</span><a href="#local-6989586621679443844"><span class="hs-identifier hs-var">op1</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-125"></span><span>                </span><span class="annot"><a href="Data.JumpTarget.html#External"><span class="hs-identifier hs-type">External</span></a></span><span> </span><span id="local-6989586621679443845"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679443845"><span class="hs-identifier hs-var">sym</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; String
+</span><a href="X86.Conventions.html#strip_GLIBC"><span class="hs-identifier hs-var">strip_GLIBC</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679443845"><span class="hs-identifier hs-var">sym</span></a></span><span>
+</span><span id="line-126"></span><span>                </span><span class="annot"><span class="annottext">ResolvedJumpTarget
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;0x&quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
 forall a. [a] -&gt; [a] -&gt; [a]
-</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Key -&gt; String
-forall a. (Integral a, Show a) =&gt; a -&gt; String
-</span><a href="Base.html#showHex"><span class="hs-identifier hs-var">showHex</span></a></span><span> </span><span class="annot"><span class="annottext">Key
-</span><a href="#local-6989586621679354186"><span class="hs-identifier hs-var">a</span></a></span><span>
-</span><span id="line-122"></span><span>
-</span><span id="line-123"></span><span class="hs-comment">-- | Tries to retrieve a function name for a @call@-instruction (see @`function_name_of_entry`@).</span><span>
-</span><span id="line-124"></span><span class="hs-comment">--</span><span>
-</span><span id="line-125"></span><span class="hs-comment">-- Returns the empty string if the given instruction is not a call or a jump.</span><span>
-</span><span id="line-126"></span><span class="annot"><a href="Analysis.FunctionNames.html#function_name_of_instruction"><span class="hs-identifier hs-type">function_name_of_instruction</span></a></span><span> </span><span class="hs-glyph">::</span><span>
-</span><span id="line-127"></span><span>  </span><span class="annot"><a href="Analysis.Context.html#Context"><span class="hs-identifier hs-type">Context</span></a></span><span>            </span><span class="hs-comment">-- ^ The context</span><span>
-</span><span id="line-128"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="X86.Instruction.html#Instruction"><span class="hs-identifier hs-type">Instruction</span></a></span><span> </span><span class="hs-comment">-- ^ The instruction</span><span>
-</span><span id="line-129"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
-</span><span id="line-130"></span><span id="function_name_of_instruction"><span class="annot"><span class="annottext">function_name_of_instruction :: Context -&gt; Instruction -&gt; String
-</span><a href="Analysis.FunctionNames.html#function_name_of_instruction"><span class="hs-identifier hs-var hs-var">function_name_of_instruction</span></a></span></span><span> </span><span id="local-6989586621679354178"><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354178"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679354177"><span class="annot"><span class="annottext">i :: Instruction
-</span><a href="#local-6989586621679354177"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Generic.Instruction.html#Instruction"><span class="hs-identifier hs-type">Instruction</span></a></span><span> </span><span class="annot"><span class="annottext">AddressWord64
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; String
+forall {a}. Integral a =&gt; a -&gt; String
+</span><a href="Base.html#showHex"><span class="hs-identifier hs-var">showHex</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679443833"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-127"></span><span>            </span><span class="annot"><span class="annottext">Maybe Instruction
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;0x&quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; String
+forall {a}. Integral a =&gt; a -&gt; String
+</span><a href="Base.html#showHex"><span class="hs-identifier hs-var">showHex</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679443833"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-128"></span><span>        </span><span class="annot"><span class="annottext">Maybe Instruction
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;0x&quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; String
+forall {a}. Integral a =&gt; a -&gt; String
+</span><a href="Base.html#showHex"><span class="hs-identifier hs-var">showHex</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679443833"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-129"></span><span>
+</span><span id="line-130"></span><span class="hs-comment">-- | Tries to retrieve a function name for a @call@-instruction (see @`function_name_of_entry`@).</span><span>
+</span><span id="line-131"></span><span class="hs-comment">--</span><span>
+</span><span id="line-132"></span><span class="hs-comment">-- Returns the empty string if the given instruction is not a call or a jump.</span><span>
+</span><span id="line-133"></span><span class="annot"><a href="Analysis.FunctionNames.html#function_name_of_instruction"><span class="hs-identifier hs-type">function_name_of_instruction</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-134"></span><span>  </span><span class="annot"><a href="Analysis.Context.html#Context"><span class="hs-identifier hs-type">Context</span></a></span><span>            </span><span class="annot"><span class="hs-comment">-- ^ The context</span></span><span>
+</span><span id="line-135"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="X86.Instruction.html#Instruction"><span class="hs-identifier hs-type">Instruction</span></a></span><span> </span><span class="annot"><span class="hs-comment">-- ^ The instruction</span></span><span>
+</span><span id="line-136"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-137"></span><span id="function_name_of_instruction"><span class="annot"><span class="annottext">function_name_of_instruction :: Context -&gt; Instruction -&gt; String
+</span><a href="Analysis.FunctionNames.html#function_name_of_instruction"><span class="hs-identifier hs-var hs-var">function_name_of_instruction</span></a></span></span><span> </span><span id="local-6989586621679443847"><span class="annot"><span class="annottext">Context
+</span><a href="#local-6989586621679443847"><span class="hs-identifier hs-var">ctxt</span></a></span></span><span> </span><span id="local-6989586621679443848"><span class="annot"><span class="annottext">i :: Instruction
+</span><a href="#local-6989586621679443848"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Generic.Instruction.html#Instruction"><span class="hs-identifier hs-type">Instruction</span></a></span><span> </span><span class="annot"><span class="annottext">AddressWord64
 </span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Maybe Prefix
 </span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Opcode
 </span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Maybe Operand
-</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679354176"><span class="annot"><span class="annottext">[Operand]
-</span><a href="#local-6989586621679354176"><span class="hs-identifier hs-var">ops</span></a></span></span><span> </span><span class="annot"><span class="annottext">Maybe Key
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679443849"><span class="annot"><span class="annottext">[Operand]
+</span><a href="#local-6989586621679443849"><span class="hs-identifier hs-var">ops</span></a></span></span><span> </span><span class="annot"><span class="annottext">Maybe Int
 </span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
-</span><span id="line-131"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Opcode -&gt; Bool
+</span><span id="line-138"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Opcode -&gt; Bool
 </span><a href="X86.Opcode.html#isCall"><span class="hs-identifier hs-var">isCall</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Instruction -&gt; Opcode
 forall label storage prefix opcode annotation.
 GenericInstruction label storage prefix opcode annotation -&gt; opcode
-</span><a href="Generic.Instruction.html#opcode"><span class="hs-identifier hs-var hs-var">Instr.opcode</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354177"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="Generic.Instruction.html#opcode"><span class="hs-identifier hs-var">Instr.opcode</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
+</span><a href="#local-6989586621679443848"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
 </span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">Opcode -&gt; Bool
 </span><a href="X86.Opcode.html#isJump"><span class="hs-identifier hs-var">isJump</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Instruction -&gt; Opcode
 forall label storage prefix opcode annotation.
 GenericInstruction label storage prefix opcode annotation -&gt; opcode
-</span><a href="Generic.Instruction.html#opcode"><span class="hs-identifier hs-var hs-var">Instr.opcode</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354177"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">then</span><span>
-</span><span id="line-132"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Context -&gt; Instruction -&gt; Operand -&gt; ResolvedJumpTarget
+</span><a href="Generic.Instruction.html#opcode"><span class="hs-identifier hs-var">Instr.opcode</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
+</span><a href="#local-6989586621679443848"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">then</span><span>
+</span><span id="line-139"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Context -&gt; Instruction -&gt; Operand -&gt; ResolvedJumpTarget
 </span><a href="Analysis.FunctionNames.html#operand_static_resolve"><span class="hs-identifier hs-var">operand_static_resolve</span></a></span><span> </span><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354178"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354177"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Operand] -&gt; Operand
-forall a. [a] -&gt; a
+</span><a href="#local-6989586621679443847"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
+</span><a href="#local-6989586621679443848"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Operand] -&gt; Operand
+forall a. HasCallStack =&gt; [a] -&gt; a
 </span><span class="hs-identifier hs-var">head</span></span><span> </span><span class="annot"><span class="annottext">[Operand]
-</span><a href="#local-6989586621679354176"><span class="hs-identifier hs-var">ops</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-133"></span><span>      </span><span class="annot"><a href="Data.JumpTarget.html#External"><span class="hs-identifier hs-type">External</span></a></span><span> </span><span id="local-6989586621679354172"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679354172"><span class="hs-identifier hs-var">sym</span></a></span></span><span>       </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679354172"><span class="hs-identifier hs-var">sym</span></a></span><span>
-</span><span id="line-134"></span><span>      </span><span class="annot"><a href="Data.JumpTarget.html#ImmediateAddress"><span class="hs-identifier hs-type">ImmediateAddress</span></a></span><span> </span><span id="local-6989586621679354171"><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354171"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Context -&gt; Key -&gt; String
+</span><a href="#local-6989586621679443849"><span class="hs-identifier hs-var">ops</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-140"></span><span>      </span><span class="annot"><a href="Data.JumpTarget.html#External"><span class="hs-identifier hs-type">External</span></a></span><span> </span><span id="local-6989586621679443853"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679443853"><span class="hs-identifier hs-var">sym</span></a></span></span><span>       </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679443853"><span class="hs-identifier hs-var">sym</span></a></span><span>
+</span><span id="line-141"></span><span>      </span><span class="annot"><a href="Data.JumpTarget.html#ImmediateAddress"><span class="hs-identifier hs-type">ImmediateAddress</span></a></span><span> </span><span id="local-6989586621679443854"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679443854"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Context -&gt; Int -&gt; String
 </span><a href="Analysis.FunctionNames.html#function_name_of_entry"><span class="hs-identifier hs-var">function_name_of_entry</span></a></span><span> </span><span class="annot"><span class="annottext">Context
-</span><a href="#local-6989586621679354178"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="annot"><span class="annottext">(Key -&gt; String) -&gt; Key -&gt; String
+</span><a href="#local-6989586621679443847"><span class="hs-identifier hs-var">ctxt</span></a></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; String) -&gt; Int -&gt; String
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Key
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Int
 forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Word64
-</span><a href="#local-6989586621679354171"><span class="hs-identifier hs-var">a</span></a></span><span>
-</span><span id="line-135"></span><span>      </span><span class="annot"><span class="annottext">ResolvedJumpTarget
+</span><a href="#local-6989586621679443854"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-142"></span><span>      </span><span class="annot"><span class="annottext">ResolvedJumpTarget
 </span><a href="Data.JumpTarget.html#Unresolved"><span class="hs-identifier hs-var">Unresolved</span></a></span><span>         </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;indirection@&quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
 forall a. [a] -&gt; [a] -&gt; [a]
 </span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; String
-forall a. (Integral a, Show a) =&gt; a -&gt; String
+forall {a}. Integral a =&gt; a -&gt; String
 </span><a href="Base.html#showHex"><span class="hs-identifier hs-var">showHex</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Instruction -&gt; Word64
-forall storage prefix opcode annotation.
+forall {storage} {prefix} {opcode} {annotation}.
 GenericInstruction AddressWord64 storage prefix opcode annotation
 -&gt; Word64
 </span><a href="X86.Instruction.html#addressof"><span class="hs-identifier hs-var">addressof</span></a></span><span> </span><span class="annot"><span class="annottext">Instruction
-</span><a href="#local-6989586621679354177"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-136"></span><span>  </span><span class="hs-keyword">else</span><span>
-</span><span id="line-137"></span><span>    </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679443848"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-143"></span><span>  </span><span class="hs-keyword">else</span><span>
+</span><span id="line-144"></span><span>    </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;&quot;</span></span><span>
-</span><span id="line-138"></span><span>
-</span><span id="line-139"></span><span>
-</span><span id="line-140"></span><span>
-</span><span id="line-141"></span><span>
-</span><span id="line-142"></span></pre></body></html>
+</span><span id="line-145"></span><span>
+</span><span id="line-146"></span><span>
+</span><span id="line-147"></span><span>
+</span><span id="line-148"></span><span>
+</span><span id="line-149"></span></pre></body></html>

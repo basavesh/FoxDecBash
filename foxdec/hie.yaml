@@ -1,0 +1,10 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "foxdec:lib"
+
+    - path: "./app/Main.hs"
+      component: "foxdec:exe:foxdec-exe"
+
+    - path: "./app/Paths_foxdec.hs"
+      component: "foxdec:exe:foxdec-exe"

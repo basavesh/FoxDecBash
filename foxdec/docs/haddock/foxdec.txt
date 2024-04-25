@@ -10,24 +10,27 @@
 
 
 module Base
+class IntGraph g
+intgraph_post :: IntGraph g => g -> Int -> IntSet
+intgraph_V :: IntGraph g => g -> IntSet
 
 -- | Show the integer in hex.
-showHex :: (Integral a, Show a) => a -> String
+showHex :: Integral a => a -> String
 
 -- | Show an integer list as hex-list.
-showHex_list :: (Integral a, Show a) => [a] -> [Char]
+showHex_list :: Integral a => [a] -> [Char]
 
 -- | Show an integer set as hex-list.
 showHex_set :: IntSet -> [Char]
 
 -- | Show an optional integer as an optional hex.
-showHex_option :: (Integral a, Show a) => Maybe a -> [Char]
+showHex_option :: Integral a => Maybe a -> String
 
 -- | Read an int from a string storing a hex.
 readHex' :: (Eq a, Num a) => String -> a
 
 -- | Lookup and produce error message if key does not exists in map.
-im_lookup :: [Char] -> IntMap p -> Key -> p
+im_lookup :: [Char] -> IntMap a -> Key -> a
 
 -- | use a default value in case of <tt>Nothing</tt>
 orElse :: Eq a => Maybe a -> a -> a
@@ -91,13 +94,6 @@ graph_is_vertex :: Graph -> Key -> Bool
 
 -- | is (v0,v1) an edge?
 graph_is_edge :: Graph -> Key -> Key -> Bool
-
--- | retrieve a non-trivial SCC, if any exists
-graph_nontrivial_scc :: Graph -> IntSet
-
--- | find next vertex to consider: either a terminal vertex (if any) or the
---   head of an SCC
-graph_find_next :: Graph -> Maybe Int
 putNESetOf :: Putter a -> Putter (NESet a)
 
 -- | Read as a list of elements.
@@ -107,13 +103,13 @@ getNESetOf :: Ord a => Get a -> Get (NESet a)
 hex_color_of_text :: String -> String
 
 -- | A list of RGB colors
-hex_colors :: [[Char]]
+hex_colors :: [String]
 allp :: [a -> Bool] -> a -> Bool
 instance GHC.Show.Show Base.Graph
 instance GHC.Generics.Generic Base.Graph
 instance Data.Serialize.Serialize Base.Graph
 instance Control.DeepSeq.NFData Base.Graph
-instance Algorithm.SCC.IntGraph Base.Graph
+instance Base.IntGraph Base.Graph
 instance (GHC.Classes.Ord a, Data.Serialize.Serialize a) => Data.Serialize.Serialize (Data.Set.NonEmpty.Internal.NESet a)
 
 module Algorithm.Dominance
@@ -247,10 +243,11 @@ module Generic.Binary
 
 -- | Information on the sections in the binary
 data SectionsInfo
-SectionsInfo :: [(String, String, Word64, Word64)] -> Word64 -> Word64 -> SectionsInfo
+SectionsInfo :: [(String, String, Word64, Word64, Word64)] -> Word64 -> Word64 -> SectionsInfo
 
--- | Sections: segment names, section names, addresses and sizes.
-[si_sections] :: SectionsInfo -> [(String, String, Word64, Word64)]
+-- | Sections: segment names, section names, addresses, sizes, and
+--   alignment.
+[si_sections] :: SectionsInfo -> [(String, String, Word64, Word64, Word64)]
 [si_min_address] :: SectionsInfo -> Word64
 [si_max_address] :: SectionsInfo -> Word64
 
@@ -260,11 +257,17 @@ SectionsInfo :: [(String, String, Word64, Word64)] -> Word64 -> Word64 -> Sectio
 --   bytes from address 0xcfe0 procudes a pointer to malloc. Thus an
 --   instruction: "CALL qword ptr [0xcfe0]" can be seen as "CALL malloc".
 --   
---   Relocated_Object: E.g.: 0xd0a8 --&gt; stdout Means that "mov rdi,QWORD
+--   Relocated_Label: E.g.: 0xd0a8 --&gt; stdout Means that "mov rdi,QWORD
 --   PTR [0xd0a8]" can be seen as "mov rdi, QWORD PTR [stdout]"
 --   
---   Relocated_Address: E.g.: 0xaaa -&gt; 0xbbbb Means that reading 8 bytes
---   from address 0xaaaa produces the value 0xbbbb
+--   Relocated_ResolvedObject E.g.: 0xc0fc0 "environ" -&gt; 0xc1340
+--   Sometimes, a relocation has been resolved during linking. In that
+--   case, it is no longer an external object. For example, there may be a
+--   relocation that maps address 0xc0fc0 to symbol "environ". However,
+--   that symbol is an object with an address (e.g., 0xc1340) that itself
+--   has been relocated. Symbol "environ" now no longer is an external
+--   symbol. Instead, we have *environ = &amp;object, where "object" is the
+--   object that 0xc1340 is relocated to.
 data Symbol
 
 -- | Address a0 is a pointer to memory storing the entry of an external
@@ -273,6 +276,9 @@ Relocated_Function :: String -> Symbol
 
 -- | Address a0 can be replaced by the string, e.g., "stdout" or "optind"
 Relocated_Label :: String -> Symbol
+
+-- | At linking time internally resolved relocation
+Relocated_ResolvedObject :: String -> Word64 -> Symbol
 
 -- | Address a0 can be replaced by the string.
 Internal_Label :: String -> Symbol
@@ -507,7 +513,9 @@ CMP :: Opcode
 CMPEQSD :: Opcode
 CMPNEQSD :: Opcode
 CMPNLESD :: Opcode
+CMPNLESS :: Opcode
 CMPLTSD :: Opcode
+CMPLTSS :: Opcode
 CMPS :: Opcode
 CMPSB :: Opcode
 CMPSD :: Opcode
@@ -1068,6 +1076,7 @@ REPZ :: Prefix
 REPNE :: Prefix
 LOCK :: Prefix
 BND :: Prefix
+NOTRACK :: Prefix
 instance GHC.Generics.Generic X86.Prefix.Prefix
 instance GHC.Read.Read X86.Prefix.Prefix
 instance GHC.Classes.Ord X86.Prefix.Prefix
@@ -1265,11 +1274,11 @@ is_exiting_function_call :: [Char] -> Bool
 strip_GLIBC :: String -> String
 
 -- | Overview of sections with instructions.
-sections_with_instructions :: [([Char], [Char])]
+sections_with_instructions :: [(String, String)]
 
 -- | Sections in the following list are assumed not to be modifiable during
 --   execution, i.e., constant.
-section_is_unwritable :: ([Char], [Char]) -> Bool
+section_is_unwritable :: (String, String) -> Bool
 
 -- | A list if registers that are non-volatile, i.e., that must be
 --   preserved by a function (callee-saved)
@@ -1283,6 +1292,71 @@ parameter_registers :: [Register]
 
 module X86.Address
 type Address = GenericAddress Register
+
+
+module NASM.NASM
+
+-- | NASM contains external symbols, sections, and a footer
+data NASM
+NASM :: Set String -> [NASM_Section] -> [String] -> NASM
+[nasm_externals] :: NASM -> Set String
+[nasm_sections] :: NASM -> [NASM_Section]
+[nasm_footer] :: NASM -> [String]
+
+-- | A NASM label is either a string, or a macro. The latter is used when
+--   referring to addresses within data sections.
+data NASM_Label
+
+-- | Normal label
+Label :: String -> NASM_Label
+
+-- | Macro into data section (segment, section, a0, offset)
+Macro :: String -> String -> Word64 -> Word64 -> NASM_Label
+
+-- | A NASM section is either a NASM text section or NASM data section A
+--   NASM data section is simply a String
+data NASM_Section
+NASM_Section_Text :: NASM_TextSection -> NASM_Section
+NASM_Section_Data :: [NASM_DataSection] -> NASM_Section
+
+-- | An annotation consists of an address that is being symbolized to a
+--   label and an offset. The offset will often be 0. For example: 0x1016
+--   --&gt; L1000_2 0x4028 --&gt; L_.bss_0x4020 + 0x8
+type Annot = [(Word64, NASM_Label, Word64)]
+
+-- | A NASM text section contains a header (usually just some comments),
+--   and a graph of basic blocks
+data NASM_TextSection
+NASM_TextSection :: String -> [(Int, [NASM_Line])] -> NASM_TextSection
+[nasm_function_name] :: NASM_TextSection -> String
+
+-- | A mapping of blockIDs to instructions
+[nasm_blocks] :: NASM_TextSection -> [(Int, [NASM_Line])]
+
+-- | A line is either a comment, an instruction or a label
+data NASM_Line
+
+-- | A comment with an indentation level (number of spaces
+NASM_Comment :: Int -> String -> NASM_Line
+
+-- | An instruction with an annotation
+NASM_Line :: NASM_Instruction -> NASM_Line
+
+-- | A label
+NASM_Label :: NASM_Label -> NASM_Line
+instance GHC.Classes.Ord NASM.NASM.NASM_Label
+instance GHC.Classes.Eq NASM.NASM.NASM_Label
+instance GHC.Classes.Eq NASM.NASM.NASM_Address
+instance GHC.Classes.Eq NASM.NASM.NASM_Operand
+instance GHC.Classes.Eq NASM.NASM.NASM_Instruction
+instance GHC.Classes.Eq NASM.NASM.NASM_Line
+instance GHC.Show.Show NASM.NASM.NASM_DataSection
+instance GHC.Show.Show NASM.NASM.NASM_TextSection
+instance GHC.Show.Show NASM.NASM.NASM_Line
+instance GHC.Show.Show NASM.NASM.NASM_Instruction
+instance GHC.Show.Show NASM.NASM.NASM_Operand
+instance GHC.Show.Show NASM.NASM.NASM_Address
+instance GHC.Show.Show NASM.NASM.NASM_Label
 
 module Data.Variable
 
@@ -1525,13 +1599,13 @@ pp_expr :: SimpleExpr -> [Char]
 expr_size :: SimpleExpr -> Int
 
 -- | Sign-extension from 32 to 64 bits
-sextend_32_64 :: (Bits p, Num p) => p -> p
+sextend_32_64 :: (Bits a, Num a) => a -> a
 
 -- | Sign-extension from 16 to 64 bits
-sextend_16_64 :: (Bits p, Num p) => p -> p
+sextend_16_64 :: (Bits a, Num a) => a -> a
 
 -- | Sign-extension from 8 to 64 bits
-sextend_8_64 :: (Bits p, Num p) => p -> p
+sextend_8_64 :: (Bits a, Num a) => a -> a
 instance GHC.Classes.Ord Data.SymbolicExpression.PointerBase
 instance GHC.Classes.Eq Data.SymbolicExpression.PointerBase
 instance GHC.Generics.Generic Data.SymbolicExpression.PointerBase
@@ -1648,7 +1722,7 @@ execSstate :: State (Sstate v p, VCS) b -> Sstate v p -> Sstate v p
 evalSstate :: State (Sstate v p, VCS) a -> Sstate v p -> a
 
 -- | Read from a register
-sread_rreg :: SymbolicExecutable ctxt p1 p2 => ctxt -> Register -> (Sstate p1 p3, b) -> p1
+sread_rreg :: SymbolicExecutable ctxt v p => ctxt -> Register -> (Sstate v p, b) -> v
 sread_reg :: SymbolicExecutable ctxt v p => ctxt -> Register -> State (Sstate v p, VCS) v
 
 -- | Write to a register
@@ -1681,13 +1755,13 @@ maybe_operand_size :: HasSize storage => [GenericOperand storage] -> Maybe Int
 sexec_cinstr :: SymbolicExecutable ctxt v p => ctxt -> Instruction -> State (Sstate v p, VCS) ()
 sset_rip :: SymbolicExecutable ctxt v p => ctxt -> Instruction -> State (Sstate v p, VCS) ()
 sexec_instr :: SymbolicExecutable ctxt v p => ctxt -> Instruction -> State (Sstate v p, VCS) ()
-sexec_block :: SymbolicExecutable ctxt v p => ctxt -> [GenericInstruction AddressWord64 Register Prefix Opcode Int] -> Maybe [GenericInstruction AddressWord64 Register Prefix Opcode Int] -> Sstate v p -> (Sstate v p, Set VerificationCondition)
+sexec_block :: SymbolicExecutable p v p => p -> [Instruction] -> Maybe [GenericInstruction AddressWord64 Register Prefix Opcode Int] -> Sstate v p -> (Sstate v p, Set VerificationCondition)
 sjoin_mem :: SymbolicExecutable ctxt v p => ctxt -> String -> Sstate v p -> Sstate v p -> Map (p, RegionSize) v
-sjoin_states :: forall v p1 ctxt p2. (SymbolicExecutable ctxt v p1, SymbolicExecutable ctxt v p2) => ctxt -> [Char] -> Sstate v p1 -> Sstate v p1 -> Sstate v p1
+sjoin_states :: SymbolicExecutable p b p => p -> [Char] -> Sstate b p -> Sstate b p -> Sstate b p
 
 -- | The supremum of a list of predicates
 supremum :: SymbolicExecutable ctxt v p => ctxt -> [Sstate v p] -> Sstate v p
-simplies :: SymbolicExecutable ctxt v p => ctxt -> Sstate v p -> Sstate v p -> Bool
+simplies :: SymbolicExecutable p v p => p -> Sstate v p -> Sstate v p -> Bool
 instance GHC.Classes.Ord Generic.SymbolicConstituents.VerificationCondition
 instance GHC.Classes.Eq Generic.SymbolicConstituents.VerificationCondition
 instance GHC.Generics.Generic Generic.SymbolicConstituents.VerificationCondition
@@ -1703,39 +1777,6 @@ instance (Control.DeepSeq.NFData v, Control.DeepSeq.NFData p) => Control.DeepSeq
 instance GHC.Show.Show Generic.SymbolicConstituents.RegionSize
 instance Data.Serialize.Serialize Generic.SymbolicConstituents.RegionSize
 instance Control.DeepSeq.NFData Generic.SymbolicConstituents.RegionSize
-
-
-module Data.SValue2
-data PtrValue
-Base_StackPointer :: String -> PtrValue
-Base_Section :: Word64 -> PtrValue
-Base_Malloc :: Maybe Word64 -> Maybe String -> PtrValue
-Base_TLS :: PtrValue
-Base_StatePart :: StatePart -> PtrValue
-data SValue
-SPointer :: NESet PtrValue -> SValue
-SConcrete :: NESet SimpleExpr -> SValue
-SAddends :: NESet StatePart -> SValue
-Top :: SValue
-show_set :: [[Char]] -> [Char]
-isImmediate :: SValue -> Bool
-isImmediateExpr :: SimpleExpr -> Bool
-isConcrete :: SValue -> Bool
-isPointer :: SValue -> Bool
-isSectionPtr :: PtrValue -> Bool
-isStackPointer :: PtrValue -> Bool
-instance GHC.Generics.Generic Data.SValue2.PtrValue
-instance GHC.Classes.Ord Data.SValue2.PtrValue
-instance GHC.Classes.Eq Data.SValue2.PtrValue
-instance GHC.Generics.Generic Data.SValue2.SValue
-instance GHC.Classes.Ord Data.SValue2.SValue
-instance GHC.Classes.Eq Data.SValue2.SValue
-instance Data.Serialize.Serialize Data.SValue2.SValue
-instance Control.DeepSeq.NFData Data.SValue2.SValue
-instance GHC.Show.Show Data.SValue2.SValue
-instance Data.Serialize.Serialize Data.SValue2.PtrValue
-instance Control.DeepSeq.NFData Data.SValue2.PtrValue
-instance GHC.Show.Show Data.SValue2.PtrValue
 
 
 module Data.SValue
@@ -2117,10 +2158,10 @@ read_from_datasection :: Context -> Word64 -> Int -> Maybe Word64
 is_roughly_an_address :: Context -> Word64 -> Bool
 
 -- | Find a section for an address (see <tt><a>SectionsInfo</a></tt>)
-find_section_for_address :: Context -> Word64 -> Maybe (String, String, Word64, Word64)
+find_section_for_address :: Context -> Word64 -> Maybe (String, String, Word64, Word64, Word64)
 
 -- | Find a section ending at address (see <tt><a>SectionsInfo</a></tt>)
-find_section_ending_at :: Context -> Word64 -> Maybe (String, String, Word64, Word64)
+find_section_ending_at :: Context -> Word64 -> Maybe (String, String, Word64, Word64, Word64)
 
 -- | Fetching an instruction
 --   
@@ -2235,6 +2276,11 @@ instance Control.DeepSeq.NFData Generic.Binary.Relocation
 instance Control.DeepSeq.NFData Generic.SymbolicConstituents.VerificationCondition
 instance Control.DeepSeq.NFData Generic.Binary.SectionsInfo
 instance GHC.Show.Show Generic.SymbolicConstituents.VerificationCondition
+
+
+module NASM.NASMToC
+instance GHC.Show.Show NASM.NASMToC.TypeMode
+instance GHC.Classes.Eq NASM.NASMToC.TypeMode
 
 
 -- | Provides a taxonomy for output generated by FoxDec. The output is a
@@ -2605,8 +2651,8 @@ is_heap_pointer_domain :: p -> PointerDomain -> Bool
 
 -- | Returns true iff the given symbolic regions are necessarily separate.
 --   TODO: add VCS, not necc
-necessarily_separate :: FContext -> [Char] -> SimpleExpr -> Maybe SimpleExpr -> SimpleExpr -> Maybe SimpleExpr -> Bool
-necessarily_separate_no_size :: FContext -> [Char] -> SimpleExpr -> SimpleExpr -> Bool
+necessarily_separate :: FContext -> String -> SimpleExpr -> Maybe SimpleExpr -> SimpleExpr -> Maybe SimpleExpr -> Bool
+necessarily_separate_no_size :: FContext -> String -> SimpleExpr -> SimpleExpr -> Bool
 
 -- | Returns true iff the given symbolic regions are necessarily equal.
 necessarily_equal :: SimpleExpr -> SimpleExpr -> Bool
@@ -2619,14 +2665,14 @@ necessarily_equal :: SimpleExpr -> SimpleExpr -> Bool
 --   the expressions are separate, we check whether the expressions can be
 --   proven separate based on their domains (see
 --   <a>separate_pointer_domains</a>).
-necessarily_separate_expressions :: (Ord a, Num a) => SimpleExpr -> a -> SimpleExpr -> a -> Bool
+necessarily_separate_expressions :: (Ord b, Num b) => SimpleExpr -> b -> SimpleExpr -> b -> Bool
 
 -- | Returns true iff the given symbolic region is necessarily enclosed in
 --   the other. For example: <tt>[RSP-16,4]</tt> is enclosed in
 --   <tt>[RSP-18,8]</tt> <tt>[RSP+4,4]</tt> is enclosed in <tt>[RSP,8]</tt>
 --   
 --   Will return <tt>False</tt> if the expressions contain bottom.
-necessarily_enclosed :: Integral a => SimpleExpr -> a -> SimpleExpr -> a -> Bool
+necessarily_enclosed :: Integral p => SimpleExpr -> p -> SimpleExpr -> p -> Bool
 get_pointer_domain :: FContext -> SimpleExpr -> Maybe PointerDomain
 
 -- | Returns true iff the two given expressions can be shown to be separate
@@ -2644,7 +2690,7 @@ pointer_bases_separate_possibly :: FContext -> PointerBase -> PointerBase -> Boo
 -- | Returns true iff the two given expressions have global pointerbases in
 --   different segments/sections of the binary. We do not assume that such
 --   pointers are separate, but do assert it.
-pointers_from_different_global_section :: (Integral a1, Integral a2) => Context -> a1 -> a2 -> Bool
+pointers_from_different_global_section :: (Integral a, Integral a) => Context -> a -> a -> Bool
 
 -- | returns the set of bases of a domain, if any
 bases_of_domain :: PointerDomain -> Maybe (NESet PointerBase)
@@ -2677,7 +2723,7 @@ module Analysis.ControlFlow
 --   are function entries called by the current function, but for which we
 --   do not know yet whether they terminate or not. If a CFG is returned,
 --   then all function calls in that CFG have already been analyzed.
-cfg_gen :: Context -> Int -> IO (Set (Instruction, Int), CFG)
+cfg_gen :: Context -> _ -> Int -> IO (Set (Instruction, Int), CFG)
 
 -- | Export a CFG to .dot file
 --   
@@ -2707,13 +2753,14 @@ node_info_of :: Context -> CFG -> Int -> NodeInfo
 --   belongs to a <tt>call</tt>
 --   
 --   TODO the Lefts are ignored so need no to return them
-stepA :: Context -> Int -> Int -> IO (Either (Set (Instruction, Int)) [(Int, Bool)])
+stepA :: Context -> (FContext -> Int -> Maybe Predicate) -> Int -> Int -> IO (Either (Set (Instruction, Int)) [(Int, Bool)])
 
 -- | The set of next blocks from the given block in a CFG
 post :: CFG -> Key -> IntSet
 
 -- | Fetching an instruction list given a block ID
 fetch_block :: CFG -> Int -> [Instruction]
+resolve_call :: Context -> (FContext -> Int -> Maybe Predicate) -> Int -> Instruction -> _
 
 -- | Resolves the first operand of a call or jump instruction. First tries
 --   to see if the instruction is an indirection, that has already been
@@ -2740,7 +2787,7 @@ show_block :: CFG -> Int -> String
 -- | Shows invariants.
 show_invariants :: CFG -> Invariants -> String
 isTerminal :: CFG -> Key -> Bool
-instance Algorithm.SCC.IntGraph Analysis.Context.CFG
+instance Base.IntGraph Analysis.Context.CFG
 
 
 -- | We assume a class where we can do predicate transformation through
@@ -2769,9 +2816,6 @@ implies :: Propagator ctxt pred => ctxt -> pred -> pred -> Bool
 do_prop :: Propagator ctxt pred => ctxt -> CFG -> Int -> pred -> (IntMap pred, Set VerificationCondition)
 
 
-module Instantiation.SymbolicPropagation2
-
-
 module Instantiation.SymbolicPropagation
 
 -- | Get the currently known invariant for the given instruction address
@@ -2789,6 +2833,7 @@ join_finit :: FContext -> FInit -> FInit -> FInit
 -- | Given the currently known invariants and postconditions, gather all
 --   stateparts occurring in the current function.
 gather_stateparts :: Invariants -> Set (NodeInfo, Predicate) -> Set SStatePart
+is_local_spointer :: SPointer -> Bool
 instance Generic.SymbolicConstituents.SymbolicExecutable Analysis.Context.FContext Data.SValue.SValue Data.SValue.SPointer
 instance Generic.SymbolicPropagation.Propagator Analysis.Context.FContext Analysis.Context.Predicate
 
@@ -2826,6 +2871,10 @@ ctxt_get_instruction_addresses :: Context -> Set Word64
 
 -- | Given an address <tt>a</tt>, retrieve the set of next addresses.
 ctxt_get_controlflow :: Context -> Word64 -> IO (Word64, [Word64])
+
+-- | Return a set of all CFGs Returns a mapping from function entries to
+--   CFGs.
+ctxt_get_cfgs :: Context -> IntMap String
 
 module OutputGeneration.Metrics
 
@@ -2886,11 +2935,10 @@ render_NASM :: Context -> NASM -> String
 --   information (the -g option of GCC). We therefore pvodie our own
 --   implementation: just a dummy, which is what the real function seems to
 --   do as well.
-__gmon_start_implementation :: [Char]
+__gmon_start_implementation :: String
 
 -- | NASM contains external symbols, sections, and a footer
 data NASM
-instance GHC.Classes.Eq NASM.L0ToNASM.NASM_Line
 
 module Algorithm.L0_Lifting
 
