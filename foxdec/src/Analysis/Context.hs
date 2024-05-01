@@ -1,4 +1,6 @@
-{-# LANGUAGE DeriveGeneric, DefaultSignatures, Strict, StandaloneDeriving, BangPatterns #-}
+{-# LANGUAGE DeriveGeneric, Strict, BangPatterns #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 {-|
 Module      : Context
@@ -555,5 +557,3 @@ address_has_instruction ctxt a =
   case find_section_for_address ctxt $ fromIntegral a of
     Nothing                      -> False
     Just (segment,section,_,_,_) -> (segment,section) `elem` sections_with_instructions && unsafePerformIO (fetch_instruction ctxt $ fromIntegral a) /= Nothing
-
-

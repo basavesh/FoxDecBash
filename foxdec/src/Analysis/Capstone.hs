@@ -1,5 +1,6 @@
-{-# LANGUAGE DeriveGeneric, DefaultSignatures #-}
 {-# OPTIONS_HADDOCK hide #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 module Analysis.Capstone where
 

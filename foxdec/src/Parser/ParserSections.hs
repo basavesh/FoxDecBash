@@ -1,7 +1,7 @@
 {-# LANGUAGE Strict #-}
-
-
 {-# OPTIONS_HADDOCK hide #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 -- Parser that can be used to read section info supplied by bash script "dump_macho.sh"
 --
@@ -82,5 +82,3 @@ sections_info = do
 -- to lists of instructions.
 parse_sections  :: String -> IO (Either ParseError SectionsInfo)
 parse_sections = parseFromFile sections_info
-
-

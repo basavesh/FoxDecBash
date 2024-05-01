@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 
 
@@ -96,5 +97,3 @@ parse_config ::
      String    -- ^ The filename
   -> IO Config
 parse_config = input auto . pack
-
-

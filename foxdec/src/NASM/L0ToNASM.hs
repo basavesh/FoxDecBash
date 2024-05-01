@@ -1,5 +1,7 @@
 {-# LANGUAGE PartialTypeSignatures , FlexibleContexts, Strict #-}
 {-# OPTIONS_HADDOCK prune  #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 {-|
 Module      : L0ToNASM
@@ -1059,4 +1061,3 @@ find_unused_register regs instrs =
 -- It is related to debugging information (the -g option of GCC).
 -- We therefore pvodie our own implementation: just a dummy, which is what the real function seems to do as well.
 __gmon_start_implementation = "void __gmon_start__ () { return; }"
-

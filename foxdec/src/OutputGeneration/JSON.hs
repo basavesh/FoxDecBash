@@ -1,4 +1,6 @@
-{-# LANGUAGE PartialTypeSignatures , FlexibleContexts, DeriveGeneric, StandaloneDeriving, StrictData #-}
+{-# LANGUAGE PartialTypeSignatures , FlexibleContexts, StrictData #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 
 module OutputGeneration.JSON (
@@ -250,8 +252,3 @@ instance ToJSON SValue where
   toJSON = genericToJSON defaultOptions { sumEncoding = ObjectWithSingleField }
 instance ToJSON JSON where
   toJSON = genericToJSON defaultOptions { sumEncoding = ObjectWithSingleField }
-
-
-
-
-

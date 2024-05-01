@@ -1,5 +1,7 @@
 {-# LANGUAGE PartialTypeSignatures , FlexibleContexts, Strict #-}
 {-# OPTIONS_HADDOCK prune  #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 {-|
 Module      : NASMToC
@@ -311,4 +313,3 @@ render_label (Macro segment section a0 offset) = mk_section_name (segment,sectio
  where
   show_offset 0 = ""
   show_offset offset = " + " ++ show offset
-

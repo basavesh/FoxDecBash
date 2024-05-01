@@ -1,4 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 module X86.Instruction (Instruction, canonicalize, addressof) where
 
@@ -492,8 +494,3 @@ hipart IMUL  = IMUL_HI
 hipart MUL   = MUL_HI
 hipart IDIV  = IDIV_HI
 hipart DIV   = DIV_HI
-
-
-
-
-

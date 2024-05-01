@@ -1,4 +1,6 @@
-{-# LANGUAGE FlexibleContexts, DeriveGeneric, StandaloneDeriving, StrictData #-}
+{-# LANGUAGE FlexibleContexts, StrictData #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 
 module OutputGeneration.Retrieval where

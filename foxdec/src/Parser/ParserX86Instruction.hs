@@ -1,4 +1,6 @@
 {-# OPTIONS_HADDOCK hide #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 -- Parser that can be used to read the output of objdump applied to X86 binaries
 --

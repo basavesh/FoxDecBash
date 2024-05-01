@@ -1,4 +1,6 @@
-{-# LANGUAGE MultiParamTypeClasses, DeriveGeneric, FlexibleInstances, StrictData#-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, StrictData#-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 {-|
 Module      : SymbolicPropagation
@@ -1623,6 +1625,3 @@ ctry_jump_targets fctxt v@(SConcrete es) =
       Just (Relocated_Label f) -> Just $ External f
       _                        -> Nothing
 ctry_jump_targets fctxt _ = Nothing 
-
-
-

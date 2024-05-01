@@ -1,4 +1,6 @@
-{-# LANGUAGE DeriveGeneric, MultiParamTypeClasses, FunctionalDependencies, FlexibleContexts #-}
+{-# LANGUAGE DeriveGeneric, FunctionalDependencies, FlexibleContexts #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 module Generic.SymbolicConstituents where
 
@@ -11,6 +13,9 @@ import X86.Instruction (addressof)
 
 import Data.JumpTarget
 import Data.SymbolicExpression
+    ( FlagStatus(..),
+      SimpleExpr(SE_Immediate),
+      StatePart(SP_Mem, SP_Reg) )
 
 import Generic.HasSize
 import Generic.Address
@@ -540,7 +545,3 @@ supremum ctxt ss = foldr1 (sjoin_states ctxt "supremum") ss
 simplies ctxt s0 s1 = (set_rip $ sjoin_states ctxt "simplies" s0 s1) == (set_rip s0)
  where
   set_rip = execSstate (swrite_rreg ctxt Reg.RIP (simmediate ctxt 0))
-
-
-
-

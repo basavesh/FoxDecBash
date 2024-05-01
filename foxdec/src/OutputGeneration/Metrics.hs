@@ -1,4 +1,6 @@
-{-# LANGUAGE PartialTypeSignatures , FlexibleContexts, DeriveGeneric, StandaloneDeriving, StrictData #-}
+{-# LANGUAGE PartialTypeSignatures , FlexibleContexts, DeriveGeneric, StrictData #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 
 module OutputGeneration.Metrics (

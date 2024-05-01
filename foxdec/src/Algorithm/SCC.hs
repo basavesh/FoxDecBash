@@ -1,5 +1,7 @@
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_HADDOCK hide #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 
 module Algorithm.SCC where
@@ -122,7 +124,3 @@ graph_find_next g@(Edges es) =
   else case find (IS.disjoint (IM.keysSet es) . snd) $ IM.toList es of
     Nothing    -> Just $ head $ IS.toList $ graph_nontrivial_scc g -- no terminal vertex
     Just (v,_) -> Just v                               -- terminal vertex
-
-
-
-

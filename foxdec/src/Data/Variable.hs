@@ -1,5 +1,4 @@
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE NamedFieldPuns, DeriveGeneric #-}
 
 module Data.Variable (Variable(..), VariableConversion(..), isSSA, fromRegister) where
 

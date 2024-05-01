@@ -1,4 +1,6 @@
-{-# LANGUAGE DeriveGeneric, DefaultSignatures, StrictData #-}
+{-# LANGUAGE DeriveGeneric, StrictData #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 {-|
 Module      : SimplePred
@@ -431,5 +433,3 @@ instance NFData StatePart
 instance NFData Operator
 instance NFData SimpleExpr
 instance NFData FlagStatus
-
-

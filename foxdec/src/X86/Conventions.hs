@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 {-|
 Module      : Conventions 
 Description : In this file, we eumerate assumptions made on calling conventions and over external functions.
@@ -73,6 +75,3 @@ return_registers = [RAX]
 
 -- | A list of registers used as parameters
 parameter_registers = [RDI, RSI, RDX, RCX, R8, R9]
-
-
-

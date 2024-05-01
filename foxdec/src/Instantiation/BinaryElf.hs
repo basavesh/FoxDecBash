@@ -1,4 +1,6 @@
 {-# LANGUAGE PartialTypeSignatures , FlexibleContexts, Strict, DeriveGeneric, StandaloneDeriving #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 module Instantiation.BinaryElf (elf_read_file) where
 
@@ -309,4 +311,3 @@ instance BinaryClass Elf
     binary_pp = pp_elf
     binary_entry = elfEntry
     binary_text_section_size = elf_text_section_size
-

@@ -1,4 +1,6 @@
 {-# LANGUAGE PartialTypeSignatures, Strict #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 {-|
 Module      : ControlFlow
@@ -503,11 +505,3 @@ hex_color_of vertex sccs =
   case findIndex (IS.member vertex) sccs of
     Just n -> hex_colors !! (126 - (floorDoubleInt $ 127 * int2Double n / int2Double (length sccs)))
     Nothing -> "#FFFFFF"
-
-
-
-
-
-
-
-

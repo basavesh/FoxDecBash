@@ -1,4 +1,6 @@
-{-# LANGUAGE PartialTypeSignatures , FlexibleContexts, Strict, DeriveGeneric, StandaloneDeriving #-}
+{-# LANGUAGE PartialTypeSignatures , FlexibleContexts, Strict #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 module Instantiation.BinaryMacho (macho_read_file) where
 
@@ -142,4 +144,3 @@ read_entries dirname name = do
     ls <- readFile fname
     return $ map read_line $ lines ls
   read_line = readHex' . tail . tail
-

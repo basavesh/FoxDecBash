@@ -1,4 +1,6 @@
-{-# LANGUAGE PartialTypeSignatures , FlexibleContexts, Strict, StandaloneDeriving, DeriveGeneric, ExistentialQuantification #-}
+{-# LANGUAGE PartialTypeSignatures , FlexibleContexts, Strict, DeriveGeneric, ExistentialQuantification #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 module Generic.Binary where
 
@@ -114,7 +116,3 @@ instance BinaryClass Binary where
   binary_pp (Binary b) = binary_pp b
   binary_entry (Binary b) = binary_entry b
   binary_text_section_size (Binary b) = binary_text_section_size b
-
-
-
-

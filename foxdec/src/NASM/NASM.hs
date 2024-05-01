@@ -1,5 +1,7 @@
 {-# LANGUAGE PartialTypeSignatures , FlexibleContexts, Strict #-}
 {-# OPTIONS_HADDOCK prune  #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 {-|
 Module      : L0ToNASM
@@ -264,4 +266,3 @@ instance Show NASM_Address where
 
    show_function Nothing = ""
    show_function (Just f) = f ++ " wrt ..plt"
-

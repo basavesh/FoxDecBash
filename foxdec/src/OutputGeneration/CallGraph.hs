@@ -1,7 +1,9 @@
-{-# LANGUAGE PartialTypeSignatures, MultiParamTypeClasses, DeriveGeneric, DefaultSignatures, FlexibleContexts, StrictData #-}
+{-# LANGUAGE PartialTypeSignatures, MultiParamTypeClasses, FlexibleContexts, StrictData #-}
 
 
 {-# OPTIONS_HADDOCK hide #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 
 module OutputGeneration.CallGraph where

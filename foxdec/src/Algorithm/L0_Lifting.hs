@@ -1,4 +1,6 @@
 {-# LANGUAGE PartialTypeSignatures , FlexibleContexts, StrictData #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 
 module Algorithm.L0_Lifting (
@@ -766,5 +768,3 @@ ctxt_analyze_unresolved_indirections entry = do
 
   clean_sstate fctxt (Sstate sregs smem fs) = Sstate sregs (clean_smem fctxt smem) fs
   clean_smem fctxt = M.filterWithKey (\(a,si) v -> stry_deterministic fctxt v /= Nothing && not (has_unknown_offset a))
-
-

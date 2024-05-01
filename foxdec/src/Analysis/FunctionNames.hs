@@ -1,4 +1,6 @@
 {-# LANGUAGE PartialTypeSignatures, Strict #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 {-|
 Module      : FunctionNames
@@ -142,7 +144,3 @@ function_name_of_instruction ctxt i@(Instruction _ _ _ _ ops _) =
       Unresolved         -> "indirection@" ++ showHex (addressof i)
   else
     ""
-
-
-
-

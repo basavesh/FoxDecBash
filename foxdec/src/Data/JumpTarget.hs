@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveGeneric, DefaultSignatures, StrictData #-}
+{-# LANGUAGE DeriveGeneric, StrictData #-}
 
 {-|
 Module      : JumpTarget

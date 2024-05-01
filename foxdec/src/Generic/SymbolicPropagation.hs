@@ -1,4 +1,6 @@
-{-# LANGUAGE PartialTypeSignatures, MultiParamTypeClasses, DeriveGeneric, DefaultSignatures, FlexibleContexts, StrictData #-}
+{-# LANGUAGE PartialTypeSignatures, MultiParamTypeClasses, FlexibleContexts, StrictData #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 {-|
 Module      : Propagation
@@ -112,8 +114,3 @@ do_prop :: Propagator ctxt pred =>
 do_prop ctxt g entry p = 
   let (m,_,vcs) = execState (prop ctxt g) $ (IM.singleton entry p, out_edges g entry, S.empty) in
     (m,vcs)
-
-
-
-
-

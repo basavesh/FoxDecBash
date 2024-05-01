@@ -1,4 +1,6 @@
 {-# OPTIONS_HADDOCK hide #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 
 -- Parser that can be used to read .indirections file.
@@ -50,5 +52,3 @@ indirections = do
 -- to lists of instructions.
 parse_indirections :: String -> IO (Either ParseError (IM.IntMap IS.IntSet))
 parse_indirections f = parseFromFile indirections f
-
-

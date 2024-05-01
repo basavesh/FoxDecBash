@@ -1,4 +1,6 @@
 {-# OPTIONS_HADDOCK hide #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 -- Parser that can be used to read .calls file.
 --
@@ -51,5 +53,3 @@ calls = do
 -- to lists of instructions.
 parse_calls :: String -> IO (Either ParseError (IM.IntMap Bool))
 parse_calls f = parseFromFile calls f
-
-

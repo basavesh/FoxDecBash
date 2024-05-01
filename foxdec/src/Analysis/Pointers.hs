@@ -1,4 +1,6 @@
-{-# LANGUAGE PartialTypeSignatures, MultiParamTypeClasses, DeriveGeneric, DefaultSignatures, FlexibleContexts, Strict #-}
+{-# LANGUAGE PartialTypeSignatures, MultiParamTypeClasses, FlexibleContexts, Strict #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 {-|
 Module      : Pointers
@@ -406,4 +408,3 @@ sources_separate ctxt necc src0 src1
 
 sources_separate_necessarily ctxt = sources_separate ctxt True
 sources_separate_possibly    ctxt = sources_separate ctxt False
-

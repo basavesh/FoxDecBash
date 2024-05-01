@@ -1,5 +1,7 @@
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_HADDOCK hide #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 module Analysis.ACode_Gen where
 
@@ -263,7 +265,3 @@ acode_lasts (ACode_While b rs) = concatMap last_while rs
       [] -> error $ "Should not happen: resume without a last block."
       bs -> bs
  
-
-
-
-

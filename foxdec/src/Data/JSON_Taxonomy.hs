@@ -1,5 +1,7 @@
 {-# LANGUAGE PartialTypeSignatures , FlexibleContexts, Strict, DeriveGeneric#-}
 {-# OPTIONS_HADDOCK prune  #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 
 {-|
@@ -229,4 +231,3 @@ mk_json_post Nothing                                    = Data.JSON_Taxonomy.Unk
 mk_json_post (Just Analysis.Context.UnknownRetBehavior) = Data.JSON_Taxonomy.UnknownRetBehavior
 mk_json_post (Just Analysis.Context.Terminating)        = Data.JSON_Taxonomy.Terminating
 mk_json_post (Just (Analysis.Context.ReturningWith q))  = Data.JSON_Taxonomy.ReturningWith $ mk_json_predicate q  
-

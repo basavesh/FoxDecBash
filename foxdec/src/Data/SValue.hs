@@ -1,4 +1,6 @@
-{-# LANGUAGE DeriveGeneric, DefaultSignatures, StrictData, StandaloneDeriving, BangPatterns #-}
+{-# LANGUAGE DeriveGeneric, StrictData #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 {-|
 Module      : SValue
@@ -147,6 +149,3 @@ mod_offset m (Base_TLS              offset) = Base_TLS $ liftOffsetMod m $ offse
 mod_offset m (Base_StatePart sp     offset) = Base_StatePart sp $ liftOffsetMod m $ offset 
 mod_offset m (Base_FunctionReturn f offset) = Base_FunctionReturn f $ liftOffsetMod m $ offset 
 mod_offset m b                              = error $ "Modding offset of: " ++ show b ++ "   " ++ show (m 42)
-
-
-
