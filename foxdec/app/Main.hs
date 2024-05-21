@@ -1,4 +1,6 @@
 {-# LANGUAGE PartialTypeSignatures , FlexibleContexts, StrictData #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 
 module Main where

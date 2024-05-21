@@ -24,10 +24,8 @@ source-repository head
 
 library
   exposed-modules:
-      Algorithm.Dominance
       Algorithm.L0_Lifting
       Algorithm.SCC
-      Analysis.ACode_Gen
       Analysis.Capstone
       Analysis.Context
       Analysis.ControlFlow
@@ -59,7 +57,6 @@ library
       OutputGeneration.JSON
       OutputGeneration.Metrics
       OutputGeneration.Retrieval
-      Parser.ParserCalls
       Parser.ParserDump
       Parser.ParserIndirections
       Parser.ParserSections

@@ -150,8 +150,3 @@ bool ZF,CF,SF,GF;
 
 uint64_t Ltemp_storage_foxdec_init;
 uint64_t* Ltemp_storage_foxdec = &Ltemp_storage_foxdec_init;
-
-
-
-
-
